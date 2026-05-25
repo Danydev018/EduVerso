@@ -38,3 +38,8 @@ yarn-error.log*
 
 # supabase
 supabase/.temp
+
+# graphify (skill local de desarrollo, no se versiona)
+.claude/
+CLAUDE.md
+graphify-out/
