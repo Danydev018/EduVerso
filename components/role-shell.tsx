@@ -16,7 +16,7 @@ export function RoleShell({
       <header className="border-b bg-white">
         <div className="container mx-auto flex items-center justify-between py-3">
           <div>
-            <h1 className="text-lg font-bold">EduPlay</h1>
+            <h1 className="text-lg font-bold">EduVerso</h1>
             <p className="text-xs text-muted-foreground">{roleLabel}</p>
           </div>
           <div className="flex items-center gap-3">

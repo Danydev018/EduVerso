@@ -1,6 +1,6 @@
 {
-  "name": "EduPlay — Aprende Jugando",
-  "short_name": "EduPlay",
+  "name": "EduVerso — Aprende Jugando",
+  "short_name": "EduVerso",
   "description": "Sistema de aprendizaje gamificado para educación primaria",
   "start_url": "/",
   "display": "standalone",

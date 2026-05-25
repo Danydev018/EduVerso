@@ -23,7 +23,7 @@ Requisitos: Node.js 18.17 o superior.
 ## 2. Crear proyecto en Supabase
 
 1. Ir a https://supabase.com → **New Project**.
-2. Nombre del proyecto: `eduplay` (o el que prefieras).
+2. Nombre del proyecto: `eduverso` (o el que prefieras).
 3. Contraseña de la base de datos: **guárdala**, la vas a necesitar.
 4. Región: la más cercana a Venezuela (probablemente `us-east-1`).
 5. Esperar a que el proyecto termine de aprovisionarse (~2 min).
@@ -124,7 +124,7 @@ git push -u origin main
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 6. **Deploy**.
 
-Cuando termine, Vercel te da una URL pública (ej: `eduplay.vercel.app`). Abrirla y verificar que el login también funciona en producción.
+Cuando termine, Vercel te da una URL pública (ej: `eduverso.vercel.app`). Abrirla y verificar que el login también funciona en producción.
 
 ---
 

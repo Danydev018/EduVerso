@@ -11,7 +11,7 @@ export default function LoginPage({
     <main className="min-h-screen flex items-center justify-center p-4 bg-muted">
       <div className="w-full max-w-md bg-white rounded-lg shadow-sm border p-6">
         <header className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-foreground">EduPlay</h1>
+          <h1 className="text-2xl font-bold text-foreground">EduVerso</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Ingresa con tus credenciales
           </p>

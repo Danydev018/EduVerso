@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'EduPlay — Aprende Jugando',
+  title: 'EduVerso — Aprende Jugando',
   description: 'Sistema de aprendizaje gamificado para educación primaria',
   manifest: '/manifest.json',
-  applicationName: 'EduPlay',
+  applicationName: 'EduVerso',
   appleWebApp: {
     capable: true,
-    title: 'EduPlay',
+    title: 'EduVerso',
     statusBarStyle: 'default',
   },
   formatDetection: { telephone: false },
