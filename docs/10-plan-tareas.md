@@ -24,36 +24,36 @@ El núcleo no negociable: **Semanas 1-6 + Semana 9 + Semana 10**.
 **Entregable:** Login funcional que redirige a 3 dashboards vacíos según rol. Deploy en Vercel funcionando.
 
 ### Setup del proyecto
-- [ ] Crear repositorio en GitHub
-- [ ] Inicializar proyecto Next.js 14 con TypeScript: `npx create-next-app@latest app --typescript --tailwind --app`
-- [ ] Instalar dependencias: `npm install @supabase/supabase-js @supabase/ssr shadcn-ui next-pwa`
-- [ ] Inicializar shadcn/ui: `npx shadcn-ui@latest init`
-- [ ] Configurar variables de entorno en `.env.local`
-- [ ] Conectar repositorio a Vercel (deploy automático)
+- [x] Crear repositorio en GitHub
+- [x] Inicializar proyecto Next.js 14 con TypeScript: `npx create-next-app@latest app --typescript --tailwind --app`
+- [x] Instalar dependencias: `npm install @supabase/supabase-js @supabase/ssr shadcn-ui next-pwa`
+- [x] Inicializar shadcn/ui: `npx shadcn-ui@latest init`
+- [x] Configurar variables de entorno en `.env.local`
+- [x] Conectar repositorio a Vercel (deploy automático)
 
 ### Supabase
-- [ ] Crear proyecto en supabase.com
-- [ ] Aplicar schema completo de `docs/03-modelo-datos.md` en el SQL Editor
-- [ ] Aplicar funciones helper de RLS de `docs/04-seguridad-roles.md`
-- [ ] Aplicar todas las políticas RLS de `docs/04-seguridad-roles.md`
-- [ ] Sembrar datos estáticos: grados (SQL en `docs/03-modelo-datos.md`)
-- [ ] Sembrar plantillas de actividad (SQL en `docs/09-plantillas-actividad.md`)
-- [ ] Crear año escolar inicial
-- [ ] Crear cuenta de coordinación manualmente en Supabase Auth + insertar en `profiles`
+- [x] Crear proyecto en supabase.com
+- [x] Aplicar schema completo de `docs/03-modelo-datos.md` en el SQL Editor
+- [x] Aplicar funciones helper de RLS de `docs/04-seguridad-roles.md`
+- [x] Aplicar todas las políticas RLS de `docs/04-seguridad-roles.md`
+- [x] Sembrar datos estáticos: grados (SQL en `docs/03-modelo-datos.md`)
+- [x] Sembrar plantillas de actividad (SQL en `docs/09-plantillas-actividad.md`)
+- [x] Crear año escolar inicial
+- [x] Crear cuenta de coordinación manualmente en Supabase Auth + insertar en `profiles`
 
 ### Autenticación y roles
-- [ ] Configurar cliente Supabase con SSR (`@supabase/ssr`) para Next.js App Router
-- [ ] Crear `middleware.ts` con protección de rutas por rol
-- [ ] Implementar página de login (`/app/page.tsx` o `/app/(auth)/login/page.tsx`)
-- [ ] Implementar redirección post-login según `profiles.role`
-- [ ] Crear layouts vacíos para: `/coordinator`, `/teacher`, `/student`
-- [ ] Verificar que un usuario sin sesión es redirigido a login
+- [x] Configurar cliente Supabase con SSR (`@supabase/ssr`) para Next.js App Router
+- [x] Crear `middleware.ts` con protección de rutas por rol
+- [x] Implementar página de login (`/app/page.tsx` o `/app/(auth)/login/page.tsx`)
+- [x] Implementar redirección post-login según `profiles.role`
+- [x] Crear layouts vacíos para: `/coordinator`, `/teacher`, `/student`
+- [x] Verificar que un usuario sin sesión es redirigido a login
 
 ### PWA
-- [ ] Configurar `next-pwa` en `next.config.js`
-- [ ] Crear `public/manifest.json` con nombre, íconos y colores
-- [ ] Crear íconos PNG en 192x192 y 512x512
-- [ ] Verificar que Chrome en Android muestra el banner de instalación
+- [x] Configurar `next-pwa` en `next.config.js`
+- [x] Crear `public/manifest.json` con nombre, íconos y colores
+- [ ] Crear íconos PNG reales en 192x192 y 512x512 (actualmente placeholders — falta diseñar)
+- [ ] Verificar que Chrome en Android muestra el banner automático de instalación (requiere íconos reales; por ahora se instala manualmente vía menú ⋮ → "Agregar a pantalla de inicio")
 
 ---
 
