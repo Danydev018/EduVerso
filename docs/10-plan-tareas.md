@@ -62,32 +62,32 @@ El núcleo no negociable: **Semanas 1-6 + Semana 9 + Semana 10**.
 **Entregable:** La coordinadora puede crear alumnos, asignarlos a un salón con docente y ver su edad calculada automáticamente.
 
 ### Gestión de estudiantes
-- [ ] Página listado de alumnos con: nombre, edad calculada, grado, sección, status
-- [ ] Filtros: por grado, sección, status (active/withdrawn)
-- [ ] Formulario crear alumno: nombre, fecha de nacimiento, email, contraseña inicial
-  - [ ] Crear usuario en Supabase Auth
-  - [ ] Insertar en `profiles` con `role = 'student'`
-  - [ ] Insertar en `students` con `birth_date`
-- [ ] Editar alumno: modificar nombre y fecha de nacimiento
-- [ ] Desactivar/reactivar alumno: toggle `profiles.is_active`
-- [ ] Retirar alumno: cambiar `enrollments.status = 'withdrawn'` + desactivar cuenta
+- [x] Página listado de alumnos con: nombre, edad calculada, grado, sección, status
+- [x] Filtros: por grado, sección, status (active/withdrawn)
+- [x] Formulario crear alumno: nombre, fecha de nacimiento, email, contraseña inicial
+  - [x] Crear usuario en Supabase Auth
+  - [x] Insertar en `profiles` con `role = 'student'`
+  - [x] Insertar en `students` con `birth_date`
+- [x] Editar alumno: modificar nombre y fecha de nacimiento
+- [x] Desactivar/reactivar alumno: toggle `profiles.is_active`
+- [x] Retirar alumno: cambiar `enrollments.status = 'withdrawn'` + desactivar cuenta
 
 ### Gestión de salones
-- [ ] Página listado de salones del año activo: grado, sección, docente, cantidad de alumnos
-- [ ] Formulario crear salón: seleccionar grado, sección, docente
-- [ ] Asignar alumnos a salón: búsqueda de alumnos sin salón en el año activo
-- [ ] Vista detalle del salón: lista de alumnos con botón para ir a la ficha
+- [x] Página listado de salones del año activo: grado, sección, docente, cantidad de alumnos
+- [x] Formulario crear salón: seleccionar grado, sección, docente
+- [x] Asignar alumnos a salón: búsqueda de alumnos sin salón en el año activo
+- [x] Vista detalle del salón: lista de alumnos con botón para ir a la ficha
 
 ### Gestión de docentes
-- [ ] Formulario crear docente: nombre, email, contraseña inicial
-  - [ ] Crear en Supabase Auth
-  - [ ] Insertar en `profiles` con `role = 'teacher'`
-- [ ] Listar docentes con salón asignado (si tiene uno en el año activo)
+- [x] Formulario crear docente: nombre, email, contraseña inicial
+  - [x] Crear en Supabase Auth
+  - [x] Insertar en `profiles` con `role = 'teacher'`
+- [x] Listar docentes con salón asignado (si tiene uno en el año activo)
 
 ### Año escolar
-- [ ] Mostrar año escolar activo en el dashboard
-- [ ] Formulario crear nuevo año escolar (nombre, fechas inicio/fin)
-- [ ] Botón para activar un año escolar (desactiva el anterior)
+- [x] Mostrar año escolar activo en el dashboard
+- [x] Formulario crear nuevo año escolar (nombre, fechas inicio/fin)
+- [x] Botón para activar un año escolar (desactiva el anterior)
 
 ---
 
@@ -382,8 +382,8 @@ El núcleo no negociable: **Semanas 1-6 + Semana 9 + Semana 10**.
 ## Progreso general
 
 ```
-Sem 1  [ ] Fundación + Auth + PWA
-Sem 2  [ ] Panel Coordinación
+Sem 1  [x] Fundación + Auth + PWA           (faltan solo íconos PNG reales)
+Sem 2  [x] Panel Coordinación
 Sem 3  [ ] Panel Docente + Evaluaciones
 Sem 4  [ ] Actividades end-to-end          ← Hito 1
 Sem 5  [ ] UX Alumno + Gamificación
