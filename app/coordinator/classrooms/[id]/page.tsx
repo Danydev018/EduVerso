@@ -85,46 +85,46 @@ export default async function ClassroomDetailPage({ params }: { params: { id: st
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <Link href="/coordinator/classrooms" className="text-sm text-blue-600 hover:underline">
+        <Link href="/coordinator/classrooms" className="text-sm text-[hsl(var(--primary))] hover:underline">
           ← Volver a salones
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">
+        <h1 className="text-2xl font-bold text-[hsl(var(--foreground))] mt-2">
           {grade?.name} — Sección {classroom.section}
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-[hsl(var(--muted-foreground))] mt-1">
           Docente: {teacher?.full_name ?? '—'} · {activeEnrollments.length} alumnos activos
         </p>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
-        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-          <h2 className="font-semibold text-gray-700">Lista de alumnos</h2>
+      <div className="glass-card overflow-x-auto">
+        <div className="px-4 py-3 border-b border-[hsl(var(--border))]">
+          <h2 className="font-semibold text-[hsl(var(--foreground))]">Lista de alumnos</h2>
         </div>
         <table className="w-full text-sm">
-          <thead className="border-b border-gray-100">
-            <tr>
-              <th className="text-left px-4 py-2 font-medium text-gray-600">Nombre</th>
-              <th className="text-left px-4 py-2 font-medium text-gray-600">Edad</th>
-              <th className="text-left px-4 py-2 font-medium text-gray-600">Estado</th>
-              <th className="text-right px-4 py-2 font-medium text-gray-600">Acciones</th>
+          <thead>
+            <tr className="border-b border-[hsl(var(--border))]">
+              <th className="text-left px-4 py-2 font-medium text-[hsl(var(--muted-foreground))]">Nombre</th>
+              <th className="text-left px-4 py-2 font-medium text-[hsl(var(--muted-foreground))]">Edad</th>
+              <th className="text-left px-4 py-2 font-medium text-[hsl(var(--muted-foreground))]">Estado</th>
+              <th className="text-right px-4 py-2 font-medium text-[hsl(var(--muted-foreground))]">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-[hsl(var(--border))]">
             {enrollments.length === 0 && (
               <tr>
-                <td colSpan={4} className="text-center py-8 text-gray-400">
+                <td colSpan={4} className="text-center py-8 text-[hsl(var(--muted-foreground))]">
                   No hay alumnos en este salón
                 </td>
               </tr>
             )}
             {enrollments.map((e) => (
-              <tr key={e.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2.5 font-medium text-gray-900">
+              <tr key={e.id} className="hover:bg-[hsl(var(--primary)/0.03)] transition-colors">
+                <td className="px-4 py-2.5 font-medium text-[hsl(var(--foreground))]">
                   <Link href={`/coordinator/students/${e.student_id}`} className="hover:underline">
                     {e.full_name}
                   </Link>
                 </td>
-                <td className="px-4 py-2.5 text-gray-600">{e.age} años</td>
+                <td className="px-4 py-2.5 text-[hsl(var(--muted-foreground))]">{e.age} años</td>
                 <td className="px-4 py-2.5">
                   <Badge variant={
                     e.status === 'active' ? 'success' :
@@ -146,8 +146,8 @@ export default async function ClassroomDetailPage({ params }: { params: { id: st
       </div>
 
       {isCurrentYear && availableStudents.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="font-semibold text-gray-700 mb-4">Asignar alumno a este salón</h2>
+        <div className="glass-card p-6">
+          <h2 className="font-semibold text-[hsl(var(--foreground))] mb-4">Asignar alumno a este salón</h2>
           <AssignStudentForm
             classroomId={params.id}
             schoolYearId={currentYear?.id ?? ''}

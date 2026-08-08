@@ -125,35 +125,35 @@ El núcleo no negociable: **Semanas 1-6 + Semana 9 + Semana 10**.
 **Entregable:** Alumno completa un paso de una actividad y su XP sube en la base de datos.
 
 ### Creación de actividades (docente)
-- [ ] Página listado de actividades del salón con status y % completitud
-- [ ] Formulario crear actividad:
-  - [ ] Selección de plantilla (muestra nombre, descripción y número de pasos)
-  - [ ] Selección de materia (filtrada por grado del salón)
-  - [ ] Selección de tópico (filtrado por materia seleccionada)
-  - [ ] Título de la actividad
-  - [ ] Campo de contexto para el agente IA (opcional)
-  - [ ] Fechas de disponibilidad (desde / hasta)
-- [ ] Botón activar/desactivar actividad (cambia `status`)
-- [ ] Vista detalle de actividad: progreso por alumno
+- [x] Página listado de actividades del salón con status y % completitud
+- [x] Formulario crear actividad:
+  - [x] Selección de plantilla (muestra nombre, descripción y número de pasos)
+  - [x] Selección de materia (filtrada por grado del salón)
+  - [x] Selección de tópico (filtrado por materia seleccionada)
+  - [x] Título de la actividad
+  - [x] Campo de contexto para el agente IA (opcional)
+  - [x] Fechas de disponibilidad (desde / hasta)
+- [x] Botón activar/desactivar actividad (cambia `status`)
+- [x] Vista detalle de actividad: progreso por alumno
 
 ### Edge Functions — deploy inicial
 - [ ] Instalar Supabase CLI
-- [ ] Crear función `complete-step` (código en `docs/06-edge-functions.md`)
-- [ ] Crear función `ask-agent` (código en `docs/06-edge-functions.md`)
-- [ ] Configurar secrets en Supabase: `GEMINI_API_KEY`, `GROQ_API_KEY`
-- [ ] Deploy de ambas funciones
+- [x] Crear función `complete-step` (código en `docs/06-edge-functions.md`) — archivo en `supabase/functions/complete-step/index.ts`
+- [ ] Crear función `ask-agent` (Semana 7)
+- [ ] Configurar secrets en Supabase: `GEMINI_API_KEY`, `GROQ_API_KEY` (Semana 7)
+- [ ] Deploy de `complete-step` — pendiente: ejecutar `supabase functions deploy complete-step --project-ref <ref>`
 - [ ] Probar `complete-step` con Postman o curl antes de integrarlo al frontend
 
 ### Flujo del alumno — actividad
-- [ ] Página listado de actividades disponibles del alumno (activas + dentro del período)
-- [ ] Al entrar a una actividad: crear `activity_progress` si no existe
-- [ ] Renderizar paso actual según `type` de la plantilla:
-  - [ ] `introduction`: mostrar `description` del paso con área de contenido
-  - [ ] `quiz`: mostrar preguntas (para la semana 4, pueden ser placeholder)
-  - [ ] `challenge`: mostrar enunciado sin ícono de agente
-- [ ] Botón "Completar paso" que llama `complete-step`
-- [ ] Mostrar XP ganado al completar (+animación básica de número)
-- [ ] Avanzar automáticamente al siguiente paso
+- [x] Página listado de actividades disponibles del alumno (activas + dentro del período)
+- [x] Al entrar a una actividad: crear `activity_progress` si no existe
+- [x] Renderizar paso actual según `type` de la plantilla:
+  - [x] `introduction`: mostrar `description` del paso con área de contenido
+  - [x] `quiz`: mostrar enunciado (placeholder por ahora — sin preguntas múltiple choice todavía, Semana 5)
+  - [x] `challenge`: mostrar enunciado sin ícono de agente
+- [x] Botón "Completar paso" que llama `complete-step`
+- [x] Mostrar XP ganado al completar (+animación básica de número)
+- [x] Avanzar automáticamente al siguiente paso
 
 ---
 
@@ -385,7 +385,7 @@ El núcleo no negociable: **Semanas 1-6 + Semana 9 + Semana 10**.
 Sem 1  [x] Fundación + Auth + PWA           (faltan solo íconos PNG reales)
 Sem 2  [x] Panel Coordinación
 Sem 3  [ ] Panel Docente + Evaluaciones
-Sem 4  [ ] Actividades end-to-end          ← Hito 1
+Sem 4  [~] Actividades end-to-end          ← Hito 1 (falta deploy Edge Function)
 Sem 5  [ ] UX Alumno + Gamificación
 Sem 6  [ ] Leaderboard completo
 Sem 7  [ ] Agente de IA                    ← Hito 2

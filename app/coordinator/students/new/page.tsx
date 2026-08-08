@@ -13,13 +13,13 @@ export default function NewStudentPage() {
   return (
     <div className="max-w-lg">
       <div className="mb-6">
-        <Link href="/coordinator/students" className="text-sm text-blue-600 hover:underline">
+        <Link href="/coordinator/students" className="text-sm text-[hsl(var(--primary))] hover:underline">
           ← Volver a alumnos
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">Registrar alumno</h1>
+        <h1 className="text-2xl font-bold text-[hsl(var(--foreground))] mt-2">Registrar alumno</h1>
       </div>
 
-      <form action={action} className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+      <form action={action} className="glass-card p-6 space-y-4">
         {state.error && (
           <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
             {state.error}
@@ -34,7 +34,7 @@ export default function NewStudentPage() {
         <div className="space-y-1.5">
           <Label htmlFor="birth_date">Fecha de nacimiento</Label>
           <Input id="birth_date" name="birth_date" type="date" required />
-          <p className="text-xs text-gray-500">La edad se calcula automáticamente a partir de esta fecha.</p>
+          <p className="text-xs text-[hsl(var(--muted-foreground))]">La edad se calcula automáticamente a partir de esta fecha.</p>
         </div>
 
         <div className="space-y-1.5">

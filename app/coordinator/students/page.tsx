@@ -80,8 +80,8 @@ export default async function StudentsPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Alumnos</h1>
-          <p className="text-sm text-gray-500">{filtered.length} de {students.length} alumnos</p>
+          <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">Alumnos</h1>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">{filtered.length} de {students.length} alumnos</p>
         </div>
         <Button asChild>
           <Link href="/coordinator/students/new">+ Nuevo alumno</Link>
@@ -90,21 +90,21 @@ export default async function StudentsPage({
 
       <StudentFilters grades={grades ?? []} sections={sections as string[]} />
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+      <div className="glass-card overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Nombre</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Edad</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Grado / Sección</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Estado</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">Acciones</th>
+          <thead>
+            <tr className="border-b border-[hsl(var(--border))]">
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Nombre</th>
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Edad</th>
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Grado / Sección</th>
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Estado</th>
+              <th className="text-right px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-[hsl(var(--border))]">
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-10 text-gray-400">
+                <td colSpan={5} className="text-center py-10 text-[hsl(var(--muted-foreground))]">
                   No se encontraron alumnos
                 </td>
               </tr>
@@ -113,13 +113,13 @@ export default async function StudentsPage({
               const enrollStatus = student.enrollment?.status ?? (student.is_active ? 'active' : 'inactive')
               const statusInfo = STATUS_LABELS[enrollStatus] ?? { label: student.is_active ? 'Activo' : 'Inactivo', variant: student.is_active ? 'success' : 'secondary' }
               return (
-                <tr key={student.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{student.full_name}</td>
-                  <td className="px-4 py-3 text-gray-600">{student.age} años</td>
-                  <td className="px-4 py-3 text-gray-600">
+                <tr key={student.id} className="hover:bg-[hsl(var(--primary)/0.03)] transition-colors">
+                  <td className="px-4 py-3 font-medium text-[hsl(var(--foreground))]">{student.full_name}</td>
+                  <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{student.age} años</td>
+                  <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">
                     {student.enrollment
                       ? `${student.enrollment.grade_name} — ${student.enrollment.section}`
-                      : <span className="text-gray-400 italic">Sin salón</span>}
+                      : <span className="text-[hsl(var(--muted-foreground))] italic">Sin salón</span>}
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={statusInfo.variant as any}>{statusInfo.label}</Badge>
@@ -127,7 +127,7 @@ export default async function StudentsPage({
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/coordinator/students/${student.id}`}
-                      className="text-blue-600 hover:underline text-sm"
+                      className="text-[hsl(var(--primary))] hover:underline text-sm font-medium"
                     >
                       Ver / Editar
                     </Link>

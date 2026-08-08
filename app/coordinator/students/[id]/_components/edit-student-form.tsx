@@ -16,8 +16,8 @@ export function EditStudentForm({ student }: { student: Student }) {
   const [state, action] = useFormState(updateStudent, { error: null })
 
   return (
-    <form action={action} className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-      <h2 className="font-semibold text-gray-700">Editar datos</h2>
+    <form action={action} className="glass-card p-6 space-y-4">
+      <h2 className="font-semibold text-[hsl(var(--foreground))]">Editar datos</h2>
 
       {state.error && (
         <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">

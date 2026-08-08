@@ -53,22 +53,22 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <Link href="/coordinator/students" className="text-sm text-blue-600 hover:underline">
+        <Link href="/coordinator/students" className="text-sm text-[hsl(var(--primary))] hover:underline">
           ← Volver a alumnos
         </Link>
         <div className="flex items-center gap-3 mt-2">
-          <h1 className="text-2xl font-bold text-gray-900">{student.full_name}</h1>
+          <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">{student.full_name}</h1>
           <Badge variant={student.is_active ? 'success' : 'secondary'}>
             {student.is_active ? 'Activo' : 'Inactivo'}
           </Badge>
         </div>
-        <p className="text-gray-500 mt-1">{student.age} años</p>
+        <p className="text-[hsl(var(--muted-foreground))] mt-1">{student.age} años</p>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-2">
-        <h2 className="font-semibold text-gray-700">Matrícula actual</h2>
+      <div className="glass-card p-4 space-y-2">
+        <h2 className="font-semibold text-[hsl(var(--foreground))]">Matrícula actual</h2>
         {student.enrollment ? (
-          <div className="text-sm text-gray-600 space-y-1">
+          <div className="text-sm text-[hsl(var(--muted-foreground))] space-y-1">
             <p>
               <span className="font-medium">Salón:</span>{' '}
               {student.enrollment.grade_name} — Sección {student.enrollment.section}
@@ -84,7 +84,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
             </p>
           </div>
         ) : (
-          <p className="text-sm text-gray-400 italic">Sin matrícula en el año activo</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))] italic">Sin matrícula en el año activo</p>
         )}
       </div>
 

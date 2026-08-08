@@ -16,39 +16,39 @@ export default async function SchoolYearsPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Año Escolar</h1>
-        <p className="text-sm text-gray-500">Gestiona los períodos escolares de la institución</p>
+        <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">Año Escolar</h1>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">Gestiona los períodos escolares de la institución</p>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
-        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-          <h2 className="font-semibold text-gray-700">Años registrados</h2>
+      <div className="glass-card overflow-x-auto">
+        <div className="px-4 py-3 border-b border-[hsl(var(--border))]">
+          <h2 className="font-semibold text-[hsl(var(--foreground))]">Años registrados</h2>
         </div>
         <table className="w-full text-sm">
-          <thead className="border-b border-gray-100">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Nombre</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Inicio</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Fin</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Estado</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">Acciones</th>
+          <thead>
+            <tr className="border-b border-[hsl(var(--border))]">
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Nombre</th>
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Inicio</th>
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Fin</th>
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Estado</th>
+              <th className="text-right px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-[hsl(var(--border))]">
             {(years ?? []).length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-8 text-gray-400">
+                <td colSpan={5} className="text-center py-8 text-[hsl(var(--muted-foreground))]">
                   No hay años escolares registrados
                 </td>
               </tr>
             )}
             {(years ?? []).map((year) => (
-              <tr key={year.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">{year.name}</td>
-                <td className="px-4 py-3 text-gray-600">
+              <tr key={year.id} className="hover:bg-[hsl(var(--primary)/0.03)] transition-colors">
+                <td className="px-4 py-3 font-medium text-[hsl(var(--foreground))]">{year.name}</td>
+                <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">
                   {new Date(year.start_date).toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </td>
-                <td className="px-4 py-3 text-gray-600">
+                <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">
                   {new Date(year.end_date).toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </td>
                 <td className="px-4 py-3">
@@ -69,8 +69,8 @@ export default async function SchoolYearsPage() {
         </table>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="font-semibold text-gray-700 mb-4">Crear nuevo año escolar</h2>
+      <div className="glass-card p-6">
+        <h2 className="font-semibold text-[hsl(var(--foreground))] mb-4">Crear nuevo año escolar</h2>
         <NewYearForm />
       </div>
     </div>

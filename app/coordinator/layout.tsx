@@ -1,14 +1,9 @@
-import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
+import { CoordinatorSidebar } from '@/components/coordinator-sidebar'
+import { AnimatedMain } from '@/components/animated-main'
 import { LogoutButton } from '@/components/logout-button'
-
-const NAV_LINKS = [
-  { href: '/coordinator/dashboard', label: 'Inicio' },
-  { href: '/coordinator/students', label: 'Alumnos' },
-  { href: '/coordinator/classrooms', label: 'Salones' },
-  { href: '/coordinator/teachers', label: 'Docentes' },
-  { href: '/coordinator/school-years', label: 'Año Escolar' },
-]
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import BackgroundEffects from '@/components/background-effects'
 
 export default async function CoordinatorLayout({
   children,
@@ -18,50 +13,43 @@ export default async function CoordinatorLayout({
   const user = await requireRole('coordinator')
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="border-b bg-white sticky top-0 z-10">
-        <div className="container mx-auto flex items-center justify-between py-3 gap-4">
-          <div className="flex items-center gap-6">
-            <div>
-              <span className="font-bold text-blue-700">EduVerso</span>
-              <span className="text-xs text-gray-500 ml-1.5">Coordinación</span>
-            </div>
-            <nav className="hidden md:flex gap-1">
-              {NAV_LINKS.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="px-3 py-1.5 rounded-md text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
+    <div
+      className="min-h-screen flex relative"
+      data-theme="admin"
+    >
+      <BackgroundEffects />
+      <CoordinatorSidebar />
+      
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Top Header */}
+        <header className="border-b border-border bg-card/50 backdrop-blur-md h-16 flex items-center justify-between px-6 sticky top-0 z-10">
+          <div className="flex items-center gap-4">
+            <h1 className="text-lg font-semibold text-foreground">
+              Panel de Coordinación
+            </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 hidden sm:inline">{user.full_name}</span>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+                <AvatarFallback className="bg-primary text-white text-sm">
+                  {user.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden md:block">
+                <p className="text-sm font-medium text-foreground">{user.full_name}</p>
+                <p className="text-xs text-muted-foreground">Coordinador</p>
+              </div>
+            </div>
             <LogoutButton />
           </div>
-        </div>
-        {/* Mobile nav */}
-        <div className="md:hidden border-t overflow-x-auto">
-          <div className="flex gap-1 px-3 py-2 min-w-max">
-            {NAV_LINKS.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="px-3 py-1.5 rounded-md text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 whitespace-nowrap transition-colors"
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="flex-1 container mx-auto py-6 px-4">
-        {children}
-      </main>
+        {/* Main Content with Animation */}
+        <AnimatedMain>
+          {children}
+        </AnimatedMain>
+      </div>
     </div>
   )
 }

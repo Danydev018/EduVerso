@@ -8,10 +8,10 @@ export default async function NewTeacherPage() {
   return (
     <div className="max-w-lg">
       <div className="mb-6">
-        <Link href="/coordinator/teachers" className="text-sm text-blue-600 hover:underline">
+        <Link href="/coordinator/teachers" className="text-sm text-[hsl(var(--primary))] hover:underline">
           ← Volver a docentes
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">Registrar docente</h1>
+        <h1 className="text-2xl font-bold text-[hsl(var(--foreground))] mt-2">Registrar docente</h1>
       </div>
       <NewTeacherForm />
     </div>

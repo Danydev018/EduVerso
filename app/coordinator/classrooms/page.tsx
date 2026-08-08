@@ -45,8 +45,8 @@ export default async function ClassroomsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Salones</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">Salones</h1>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {currentYear ? `Año escolar: ${currentYear.name}` : 'Sin año activo'} · {rows.length} salones
           </p>
         </div>
@@ -56,39 +56,39 @@ export default async function ClassroomsPage() {
       </div>
 
       {!currentYear && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+        <div className="bg-[hsl(var(--accent)/0.1)] border border-[hsl(var(--accent)/0.3)] rounded-lg p-4 text-sm text-[hsl(var(--accent))]">
           No hay un año escolar activo.{' '}
-          <Link href="/coordinator/school-years" className="underline">
+          <Link href="/coordinator/school-years" className="underline font-medium">
             Crear o activar uno
           </Link>
           .
         </div>
       )}
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+      <div className="glass-card overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Grado</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Sección</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Docente</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Alumnos activos</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">Acciones</th>
+          <thead>
+            <tr className="border-b border-[hsl(var(--border))]">
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Grado</th>
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Sección</th>
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Docente</th>
+              <th className="text-left px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Alumnos activos</th>
+              <th className="text-right px-4 py-3 font-medium text-[hsl(var(--muted-foreground))]">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-[hsl(var(--border))]">
             {rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-10 text-gray-400">
+                <td colSpan={5} className="text-center py-10 text-[hsl(var(--muted-foreground))]">
                   No hay salones creados para este año
                 </td>
               </tr>
             )}
             {rows.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">{row.grade_name}</td>
-                <td className="px-4 py-3 text-gray-600">Sección {row.section}</td>
-                <td className="px-4 py-3 text-gray-600">{row.teacher_name}</td>
+              <tr key={row.id} className="hover:bg-[hsl(var(--primary)/0.03)] transition-colors">
+                <td className="px-4 py-3 font-medium text-[hsl(var(--foreground))]">{row.grade_name}</td>
+                <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">Sección {row.section}</td>
+                <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{row.teacher_name}</td>
                 <td className="px-4 py-3">
                   <Badge variant={row.active_students > 0 ? 'secondary' : 'outline'}>
                     {row.active_students} alumnos
@@ -97,7 +97,7 @@ export default async function ClassroomsPage() {
                 <td className="px-4 py-3 text-right">
                   <Link
                     href={`/coordinator/classrooms/${row.id}`}
-                    className="text-blue-600 hover:underline text-sm"
+                    className="text-[hsl(var(--primary))] hover:underline text-sm font-medium"
                   >
                     Ver detalle
                   </Link>

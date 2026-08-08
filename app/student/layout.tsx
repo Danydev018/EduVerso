@@ -6,5 +6,10 @@ export default async function StudentLayout({
   children: React.ReactNode
 }) {
   await requireRole('student')
-  return <>{children}</>
+
+  return (
+    <div data-theme="student" className="min-h-screen flex flex-col font-sans">
+      {children}
+    </div>
+  )
 }

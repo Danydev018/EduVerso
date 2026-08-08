@@ -141,6 +141,18 @@ create policy "enrollments_select" on public.enrollments for select to authentic
 create policy "enrollments_write" on public.enrollments for all to authenticated
   using (public.is_coordinator()) with check (public.is_coordinator());
 
+-- Permitir al docente promover alumnos de su salón (cambiar status a 'promoted')
+create policy "enrollments_promote" on public.enrollments for update to authenticated
+  using (
+    public.is_teacher()
+    and public.owns_classroom(classroom_id)
+  )
+  with check (
+    public.is_teacher()
+    and public.owns_classroom(classroom_id)
+    and status = 'promoted'
+  );
+
 -- ----------------------------------------------------------------------------
 -- subjects, topics, activity_templates (lectura pública para autenticados)
 -- ----------------------------------------------------------------------------

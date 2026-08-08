@@ -16,17 +16,17 @@ export default async function NewClassroomPage() {
   return (
     <div className="max-w-lg">
       <div className="mb-6">
-        <Link href="/coordinator/classrooms" className="text-sm text-blue-600 hover:underline">
+        <Link href="/coordinator/classrooms" className="text-sm text-[hsl(var(--primary))] hover:underline">
           ← Volver a salones
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">Crear salón</h1>
+        <h1 className="text-2xl font-bold text-[hsl(var(--foreground))] mt-2">Crear salón</h1>
         {currentYear && (
-          <p className="text-sm text-gray-500 mt-1">Año escolar activo: {currentYear.name}</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">Año escolar activo: {currentYear.name}</p>
         )}
       </div>
 
       {!currentYear ? (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+        <div className="bg-[hsl(var(--accent)/0.1)] border border-[hsl(var(--accent)/0.3)] rounded-lg p-4 text-sm text-[hsl(var(--accent))]">
           Primero debes{' '}
           <Link href="/coordinator/school-years" className="underline">
             activar un año escolar
