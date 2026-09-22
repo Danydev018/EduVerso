@@ -1,50 +1,20 @@
-'use client'
-
-import { motion } from 'framer-motion'
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-}
-
+/**
+ * Contenedores con entrada escalonada para el dashboard de coordinación.
+ *
+ * Antes usaban framer-motion (`staggerChildren`) — ~50 kB de JS y trabajo de
+ * layout en el hilo principal para un fade-in. Ahora son Server Components
+ * y el escalonado se hace con `animation-delay` en CSS (ver `.admin-stagger`
+ * en globals.css), que corre en el compositor y respeta
+ * `prefers-reduced-motion`.
+ */
 export function AnimatedContainer({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      className="space-y-6"
-      initial="hidden"
-      animate="show"
-      variants={containerVariants}
-    >
-      {children}
-    </motion.div>
-  )
+  return <div className="space-y-6">{children}</div>
 }
 
 export function AnimatedItem({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div variants={itemVariants}>
-      {children}
-    </motion.div>
-  )
+  return <div className="admin-stagger">{children}</div>
 }
 
 export function AnimatedGrid({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-      variants={containerVariants}
-    >
-      {children}
-    </motion.div>
-  )
+  return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{children}</div>
 }

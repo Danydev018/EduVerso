@@ -26,7 +26,7 @@ export function AssignStudentForm({ classroomId, schoolYearId, availableStudents
         <select
           name="student_id"
           required
-          className="flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="flex h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         >
           <option value="">Seleccionar alumno...</option>
           {availableStudents.map((s) => (

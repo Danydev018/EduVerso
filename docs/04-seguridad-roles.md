@@ -258,3 +258,65 @@ create policy "eval_update" on public.presential_evaluations for update to authe
 ## Regla crítica de seguridad
 
 `student_points` **nunca** es modificable por el cliente directamente. Solo lo escribe la Edge Function `complete-step` usando el `SUPABASE_SERVICE_ROLE_KEY`, que bypasea RLS. Esto previene que un alumno manipule su XP desde el browser o con herramientas como Postman.
+
+---
+
+## Batería de pruebas de seguridad a nivel de datos
+
+`tests/e2e/seguridad/` — se corre con `npm run test:seguridad`.
+
+**No abre navegador.** Ataca la API REST con el token de cada rol, que es el
+camino de quien se salta la interfaz: un alumno con la consola del navegador
+tiene su propio JWT y puede consultar Supabase directamente. Si la protección
+viviera en el código de las páginas, no protegería nada.
+
+Escenario provisionado (idempotente, cuentas con nombre `QA …`): dos docentes
+con salones de grados distintos y un alumno en cada uno. Con un solo docente no
+se puede demostrar aislamiento, porque el aislamiento es que A no vea lo de B.
+
+**Cómo se leen los resultados.** Con RLS, "prohibido" casi nunca es un 403: al
+leer, las filas ajenas simplemente no existen para ti, así que llega un 200 con
+lista vacía. Por eso las pruebas afirman sobre el CONTENIDO, no sobre el código
+de estado. Un 200 con datos ajenos es la falla.
+
+Estas pruebas escriben en la base real —RLS solo se comprueba contra el Postgres
+de verdad— así que hay `npm run test:limpiar` para dejarla como estaba.
+
+### Lo que encontró en la primera corrida
+
+**1. Escalada de privilegios (CRÍTICO, corregido).** Cualquier usuario podía
+hacerse coordinador con un `PATCH /profiles?id=eq.<su-id>` y
+`{"role":"coordinator"}`. Desde ahí `is_coordinator()` devuelve true y se abre
+todo: los datos personales de los demás niños, todos los salones, los años
+escolares.
+
+La causa: `profiles_update` tenía `using` pero **no `with check`**. Son cosas
+distintas y hay que escribir las dos —`USING` decide qué filas existentes puedo
+tocar; `WITH CHECK` decide en qué se pueden convertir— y sin la segunda, un
+UPDATE que pasa la primera puede dejar la fila como quiera.
+
+Corregido en `13_cierre_escalada_privilegios.sql`. La garantía real la da un
+disparador y no el `with check`, porque una política no puede comparar el valor
+nuevo contra el viejo: no tiene acceso a `OLD`, y lo que hay que detectar es que
+`role` CAMBIÓ, no cuánto vale.
+
+**2. Lecciones legibles sin sesión (menor, corregido).**
+`topic_lessons_select` se creó como `for select using (true)`, sin
+`to authenticated`. Una política sin rol aplica a todos, incluido `anon`, así
+que cualquiera con la clave pública —que viaja en el HTML de cada página— podía
+descargar el currículo completo. Corregido en la misma migración.
+
+**3. Respuestas del quiz visibles al alumno (abierto).** El texto del quiz vive
+en `activities.ai_context` con la opción correcta marcada con `*`. El alumno
+necesita leer su actividad para resolverla, así que `activities_select` se la
+concede entera, incluido ese campo: con su token puede leer todas las respuestas
+antes de contestar.
+
+Alcance: **no permite inflar la puntuación.** El XP se otorga por completar el
+paso, no por acertar, así que no hay fraude en el marcador. Lo que se rompe es
+la utilidad formativa del quiz.
+
+No se corrige con una política, porque el campo mezcla dos audiencias: es el
+contexto del tutor Y la fuente del quiz. Las dos salidas posibles están
+anotadas en el comentario de la prueba. Mientras siga abierto, esa prueba falla
+a propósito en cada corrida.

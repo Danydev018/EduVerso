@@ -39,7 +39,20 @@ yarn-error.log*
 # supabase
 supabase/.temp
 
+# playwright mcp (capturas/logs de sesiones de testing con Claude Code)
+.playwright-mcp/
+
 # graphify (skill local de desarrollo, no se versiona)
 .claude/
 CLAUDE.md
 graphify-out/
+
+# Audios originales sin comprimir (las versiones servidas están en public/audio/)
+/tema1.mp3
+/tema2.mp3
+/tema3.mp3
+
+# Pruebas
+test-results/
+playwright-report/
+tests/e2e/.auth/

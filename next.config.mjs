@@ -9,6 +9,12 @@ const withPWA = withPWAInit({
   workboxOptions: {
     disableDevLogs: true,
   },
+  // App Router excluye rutas con "_" del enrutado, así que el fallback
+  // "/_offline" por defecto de esta librería (pensado para Pages Router)
+  // nunca resolvería — hay que declarar la ruta real explícitamente.
+  fallbacks: {
+    document: '/offline',
+  },
 })
 
 /** @type {import('next').NextConfig} */

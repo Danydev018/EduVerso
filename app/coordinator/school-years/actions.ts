@@ -1,6 +1,7 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { CACHE_TAGS } from '@/lib/reference-data'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireRole } from '@/lib/auth'
 
@@ -28,6 +29,8 @@ export async function createSchoolYear(
 
   if (error) return { error: error.message }
 
+  // La lista de años está cacheada globalmente (lib/reference-data.ts).
+  revalidateTag(CACHE_TAGS.schoolYears)
   revalidatePath('/coordinator/school-years')
   return { error: null }
 }
@@ -56,6 +59,7 @@ export async function activateSchoolYear(
 
   if (activateError) return { error: activateError.message }
 
+  revalidateTag(CACHE_TAGS.schoolYears)
   revalidatePath('/coordinator/school-years')
   revalidatePath('/coordinator/dashboard')
   return { error: null }

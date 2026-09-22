@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentSchoolYear } from '@/lib/reference-data'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
@@ -8,11 +9,7 @@ export default async function ClassroomsPage() {
   await requireRole('coordinator')
   const supabase = createClient()
 
-  const { data: currentYear } = await supabase
-    .from('school_years')
-    .select('id, name')
-    .eq('is_current', true)
-    .maybeSingle()
+  const currentYear = await getCurrentSchoolYear()
 
   const { data: classrooms } = await supabase
     .from('classrooms')

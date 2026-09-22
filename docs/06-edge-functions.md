@@ -220,13 +220,14 @@ serve(async (req) => {
     const topic = activity.topics as { name: string; description: string }
     const grade = (activity.classrooms as { grades: { name: string } }).grades
     const systemPrompt = buildSystemPrompt(topic, grade.name, activity.ai_context)
+    const offTopicMessage = buildOffTopicMessage(topic.name)
 
     // 5. Llamar a Gemini (con fallback a Groq)
     let response: string
     try {
       const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY')!)
       const model = genAI.getGenerativeModel({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3.6-flash',
         systemInstruction: systemPrompt,
       })
       const result = await model.generateContent(question)
@@ -235,18 +236,31 @@ serve(async (req) => {
       response = await callGroqFallback(question, systemPrompt)
     }
 
-    // 6. Incremento atómico del contador
-    await adminClient.rpc('increment_questions_used', { p_interaction_id: interaction.id })
+    // 6. Incremento atómico del contador — SOLO si la pregunta estaba dentro
+    // del tema. Si el agente respondió con el mensaje estándar de "fuera de
+    // tema", no se descuenta (ver docs/07-agente-ia.md, tabla de
+    // comportamiento: "Pregunta fuera del tema → NO se descuenta pregunta").
+    const isOffTopic = response.trim() === offTopicMessage
+
+    if (!isOffTopic) {
+      await adminClient.rpc('increment_questions_used', { p_interaction_id: interaction.id })
+    }
 
     return ok({
       response,
-      questions_remaining: interaction.questions_limit - interaction.questions_used - 1,
+      questions_remaining: isOffTopic
+        ? interaction.questions_limit - interaction.questions_used
+        : interaction.questions_limit - interaction.questions_used - 1,
     })
 
   } catch (err) {
     return fail(500, (err as Error).message)
   }
 })
+
+function buildOffTopicMessage(topicName: string): string {
+  return `¡Esa es una curiosidad interesante! Pero hoy nos enfocamos en ${topicName}. ¿Tienes alguna duda sobre eso?`
+}
 
 function buildSystemPrompt(
   topic: { name: string; description: string },
@@ -264,7 +278,7 @@ ${aiContext ? `INSTRUCCIONES ADICIONALES DEL DOCENTE: ${aiContext}` : ''}
 REGLAS ESTRICTAS QUE DEBES SEGUIR SIEMPRE:
 1. Solo respondes preguntas relacionadas con "${topic.name}".
 2. Si la pregunta NO tiene relación con el tema, responde EXACTAMENTE:
-   "¡Esa es una curiosidad interesante! Pero hoy nos enfocamos en ${topic.name}. ¿Tienes alguna duda sobre eso?"
+   "${buildOffTopicMessage(topic.name)}"
 3. Nunca des la respuesta directa a un ejercicio — da una pista que guíe al estudiante.
 4. Máximo 3 oraciones por respuesta. Sé conciso y claro.
 5. Usa un tono amigable y motivador, como un amigo que sabe mucho.
@@ -279,15 +293,25 @@ async function callGroqFallback(question: string, systemPrompt: string): Promise
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
+      model: 'openai/gpt-oss-20b',
+      // openai/gpt-oss-20b es un modelo "reasoning": gasta parte del
+      // max_tokens en razonamiento oculto antes de la respuesta visible.
+      // Con un max_tokens bajo y reasoning por defecto, el razonamiento
+      // puede consumir casi todo el presupuesto y la respuesta sale
+      // cortada (finish_reason: "length"). Por eso reasoning_effort bajo
+      // y max_tokens generoso.
+      reasoning_effort: 'low',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: question },
       ],
-      max_tokens: 150,
+      max_tokens: 300,
     }),
   })
   const data = await response.json()
+  if (!response.ok || !data.choices) {
+    throw new Error('El agente no está disponible en este momento. Intentá de nuevo en unos segundos.')
+  }
   return data.choices[0].message.content
 }
 

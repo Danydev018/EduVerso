@@ -45,7 +45,7 @@ Referencia comercial análoga: Duolingo. La diferencia clave es que aquí el doc
 - Gestión completa del ciclo de vida del alumno (coordinación).
 - Salón digital por grado/sección/año con docente asignado.
 - Sistema de actividades basado en plantillas predefinidas.
-- Agente de IA contextual por actividad (Gemini 2.0 Flash).
+- Agente de IA contextual por actividad (Gemini 3.6 Flash).
 - Sistema de XP, niveles y leaderboard en 3 niveles.
 - Evaluación presencial registrada por el docente (no afecta leaderboard).
 - PWA instalable en Android.

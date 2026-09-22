@@ -17,7 +17,7 @@ Este proyecto está completamente documentado en `docs/`. Lee los archivos en or
 | Autenticación | Supabase Auth |
 | Lógica serverless | Supabase Edge Functions (Deno) |
 | Almacenamiento | Supabase Storage |
-| Agente de IA | Google Gemini 2.0 Flash (fallback: Groq Llama 3.1) |
+| Agente de IA | Google Gemini 3.6 Flash (fallback: Groq `openai/gpt-oss-20b`) |
 | Deploy frontend | Vercel |
 | Deploy backend | Supabase (managed) |
 | CDN/Proxy | Cloudflare (opcional, encima de Vercel) |

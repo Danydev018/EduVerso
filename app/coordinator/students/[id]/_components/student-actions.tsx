@@ -37,7 +37,7 @@ export function StudentActions({ studentId, isActive, enrollmentId, enrollmentSt
         >
           {isActive ? 'Desactivar cuenta' : 'Reactivar cuenta'}
         </Button>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-muted-foreground">
           {isActive ? 'El alumno no podrá iniciar sesión.' : 'El alumno podrá iniciar sesión.'}
         </span>
       </form>
@@ -57,7 +57,7 @@ export function StudentActions({ studentId, isActive, enrollmentId, enrollmentSt
             <Button type="submit" variant="destructive" size="sm">
               Retirar alumno
             </Button>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               Cambia la matrícula a &quot;retirado&quot; y desactiva la cuenta.
             </span>
           </div>

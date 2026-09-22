@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentSchoolYear } from '@/lib/reference-data'
 import { Badge } from '@/components/ui/badge'
 import { EditStudentForm } from './_components/edit-student-form'
 import { StudentActions } from './_components/student-actions'
@@ -19,13 +20,13 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
   await requireRole('coordinator')
   const supabase = createClient()
 
-  const [{ data: studentData }, { data: currentYear }] = await Promise.all([
+  const [{ data: studentData }, currentYear] = await Promise.all([
     supabase.from('students').select(`
       id, birth_date,
       profiles!inner(full_name, is_active),
       enrollments(id, status, school_year_id, classrooms(id, section, grades(id, name)))
     `).eq('id', params.id).single(),
-    supabase.from('school_years').select('id, name').eq('is_current', true).maybeSingle(),
+    getCurrentSchoolYear(),
   ])
 
   if (!studentData) notFound()

@@ -45,7 +45,7 @@ export default function NewStudentPage() {
         <div className="space-y-1.5">
           <Label htmlFor="password">Contraseña inicial</Label>
           <Input id="password" name="password" type="password" placeholder="Mínimo 6 caracteres" required />
-          <p className="text-xs text-gray-500">El alumno podrá cambiarla más adelante.</p>
+          <p className="text-xs text-muted-foreground">El alumno podrá cambiarla más adelante.</p>
         </div>
 
         <div className="flex gap-3 pt-2">

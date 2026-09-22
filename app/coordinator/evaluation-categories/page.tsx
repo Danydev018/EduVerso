@@ -1,8 +1,12 @@
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  CACHE_TAGS,
+  getGrades,
+  getEvaluationCategories,
+} from '@/lib/reference-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,6 +56,9 @@ async function createCategory(formData: FormData) {
     name,
   })
 
+  // Las categorías están cacheadas globalmente (lib/reference-data.ts) y las
+  // consume el formulario de evaluaciones del docente, no solo esta página.
+  revalidateTag(CACHE_TAGS.evaluationCategories)
   revalidatePath('/coordinator/evaluation-categories')
   redirect('/coordinator/evaluation-categories')
 }
@@ -74,6 +81,9 @@ async function deleteCategory(formData: FormData) {
     .delete()
     .eq('id', categoryId)
 
+  // Las categorías están cacheadas globalmente (lib/reference-data.ts) y las
+  // consume el formulario de evaluaciones del docente, no solo esta página.
+  revalidateTag(CACHE_TAGS.evaluationCategories)
   revalidatePath('/coordinator/evaluation-categories')
   redirect('/coordinator/evaluation-categories')
 }
@@ -84,22 +94,15 @@ async function deleteCategory(formData: FormData) {
 
 export default async function EvaluationCategoriesPage() {
   await requireRole('coordinator')
-  const supabase = createClient()
 
   // --- 1. Obtener grados y categorías en paralelo ---
-  const [
-    { data: gradesData },
-    { data: categoriesData },
-  ] = await Promise.all([
-    supabase.from('grades').select('id, name').order('id'),
-    supabase
-      .from('evaluation_categories')
-      .select('id, grade_id, name')
-      .order('name'),
+  const [gradesData, categoriesData] = await Promise.all([
+    getGrades(),
+    getEvaluationCategories(),
   ])
 
-  const grades = (gradesData as GradeRow[] | null) ?? []
-  const categories = (categoriesData as CategoryRow[] | null) ?? []
+  const grades = gradesData as GradeRow[]
+  const categories = categoriesData as CategoryRow[]
 
   // --- 2. Agrupar categorías por grado ---
   const gradeMap = new Map<number, string>()
@@ -203,7 +206,7 @@ export default async function EvaluationCategoriesPage() {
                 <Label htmlFor="grade_id">Grado</Label>
                 <Select id="grade_id" name="grade_id" required>
                   <option value="" disabled>
-                    Seleccioná un grado
+                    Selecciona un grado
                   </option>
                   {grades.map((g) => (
                     <option key={g.id} value={g.id}>

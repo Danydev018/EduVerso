@@ -143,8 +143,68 @@ export async function withdrawStudent(
       .eq('id', enrollmentId)
 
     if (enrollmentError) return { error: enrollmentError.message }
+
+    await createLeaderboardSnapshot(admin, studentId, enrollmentId)
   }
 
   revalidatePath('/coordinator/students')
   redirect('/coordinator/students')
+}
+
+/**
+ * Congela el XP del alumno en leaderboard_snapshots antes de que se retire
+ * del salón, para que siga apareciendo (etiquetado "Egresado") en los
+ * leaderboards de tier/institución. Ver docs/08-gamificacion.md.
+ *
+ * No lanza si algo falla — un snapshot faltante no debe bloquear el retiro
+ * del alumno (que ya cambió profiles.is_active y enrollments.status).
+ */
+async function createLeaderboardSnapshot(
+  admin: ReturnType<typeof createAdminClient>,
+  studentId: string,
+  enrollmentId: string,
+) {
+  const { data: enrollment } = await admin
+    .from('enrollments')
+    .select('classroom_id, school_year_id')
+    .eq('id', enrollmentId)
+    .maybeSingle()
+
+  if (!enrollment) return
+
+  const [{ data: classroom }, { data: schoolYear }, { data: profile }, { data: points }] =
+    await Promise.all([
+      admin
+        .from('classrooms')
+        .select('grade_id, section')
+        .eq('id', enrollment.classroom_id)
+        .maybeSingle(),
+      admin
+        .from('school_years')
+        .select('end_date')
+        .eq('id', enrollment.school_year_id)
+        .maybeSingle(),
+      admin.from('profiles').select('full_name').eq('id', studentId).maybeSingle(),
+      admin
+        .from('student_points')
+        .select('total_xp')
+        .eq('student_id', studentId)
+        .eq('school_year_id', enrollment.school_year_id)
+        .maybeSingle(),
+    ])
+
+  if (!classroom || !schoolYear || !profile) return
+
+  const totalXp = (points as { total_xp: number } | null)?.total_xp ?? 0
+  const expiresAt = new Date(schoolYear.end_date)
+  expiresAt.setFullYear(expiresAt.getFullYear() + 2)
+
+  await admin.from('leaderboard_snapshots').insert({
+    student_name: profile.full_name,
+    school_year_id: enrollment.school_year_id,
+    grade_id: classroom.grade_id,
+    section: classroom.section,
+    total_xp: totalXp,
+    expires_at: expiresAt.toISOString().slice(0, 10),
+  })
 }

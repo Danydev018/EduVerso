@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentSchoolYear } from '@/lib/reference-data'
 import { Badge } from '@/components/ui/badge'
 import { AssignStudentForm } from './_components/assign-student-form'
 import { RemoveStudentButton } from './_components/remove-student-button'
@@ -19,7 +20,7 @@ export default async function ClassroomDetailPage({ params }: { params: { id: st
   await requireRole('coordinator')
   const supabase = createClient()
 
-  const [{ data: classroom }, { data: currentYear }] = await Promise.all([
+  const [{ data: classroom }, currentYear] = await Promise.all([
     supabase
       .from('classrooms')
       .select(`
@@ -33,7 +34,7 @@ export default async function ClassroomDetailPage({ params }: { params: { id: st
       `)
       .eq('id', params.id)
       .single(),
-    supabase.from('school_years').select('id, name').eq('is_current', true).maybeSingle(),
+    getCurrentSchoolYear(),
   ])
 
   if (!classroom) notFound()

@@ -3,6 +3,7 @@ import { Poppins, Open_Sans, Baloo_2, Comic_Neue } from 'next/font/google'
 import './globals.css'
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { OfflineBanner } from "@/components/offline-banner"
 
 /* Admin theme — Poppins (headings) + Open Sans (body) */
 const poppins = Poppins({
@@ -45,10 +46,24 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
   },
   formatDetection: { telephone: false },
+  // Se declaran aquí y no con el archivo `app/icon.png` porque los genera
+  // `npm run iconos` dentro de `public/`, y así los dos sitios que los
+  // nombran —este y el manifiesto— apuntan a las mismas rutas.
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
+      { url: '/icons/icon-192.png', type: 'image/png', sizes: '192x192' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+  },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0891B2',
+  // #4F46E5 es el primario del sistema de diseño del alumno
+  // (design-system/eduverso-student). Antes acá decía #0891B2 y el manifiesto
+  // #2563eb: tres colores de marca distintos en tres archivos, ninguno el
+  // real. Este es el que pinta la barra de estado en Android.
+  themeColor: '#4F46E5',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -63,6 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body>
         <TooltipProvider>
+          <OfflineBanner />
           {children}
         </TooltipProvider>
       </body>

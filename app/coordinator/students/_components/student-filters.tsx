@@ -31,7 +31,7 @@ export function StudentFilters({
   )
 
   return (
-    <div className="flex flex-wrap gap-3 bg-white p-4 rounded-lg border border-gray-200">
+    <div className="flex flex-wrap gap-3 bg-card p-4 rounded-lg border border-border">
       <Input
         placeholder="Buscar por nombre..."
         defaultValue={searchParams.get('q') ?? ''}
@@ -39,7 +39,7 @@ export function StudentFilters({
         className="w-52"
       />
       <select
-        className="h-9 rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="h-9 rounded-md border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         defaultValue={searchParams.get('grade') ?? ''}
         onChange={(e) => updateParam('grade', e.target.value)}
       >
@@ -51,7 +51,7 @@ export function StudentFilters({
         ))}
       </select>
       <select
-        className="h-9 rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="h-9 rounded-md border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         defaultValue={searchParams.get('section') ?? ''}
         onChange={(e) => updateParam('section', e.target.value)}
       >
@@ -63,7 +63,7 @@ export function StudentFilters({
         ))}
       </select>
       <select
-        className="h-9 rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="h-9 rounded-md border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         defaultValue={searchParams.get('status') ?? ''}
         onChange={(e) => updateParam('status', e.target.value)}
       >

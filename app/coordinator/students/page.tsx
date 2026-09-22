@@ -4,6 +4,25 @@ import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { StudentFilters } from './_components/student-filters'
+import { Pagination } from '@/components/pagination'
+import { getPageRange, getTotalPages } from '@/lib/pagination'
+import { getCurrentSchoolYear, getGrades } from '@/lib/reference-data'
+
+/** Forma que devuelve la consulta anidada de PostgREST. */
+interface StudentQueryRow {
+  id: string
+  birth_date: string
+  profiles: { full_name: string; is_active: boolean } | { full_name: string; is_active: boolean }[] | null
+  enrollments?: Array<{
+    id: string
+    status: string
+    school_year_id: string
+    classrooms:
+      | { id: string; section: string; grade_id: number; grades: { id: number; name: string } | null }
+      | Array<{ id: string; section: string; grade_id: number; grades: { id: number; name: string } | null }>
+      | null
+  }>
+}
 
 function calculateAge(birthDate: string): number {
   const today = new Date()
@@ -24,26 +43,79 @@ const STATUS_LABELS: Record<string, { label: string; variant: 'success' | 'warni
 export default async function StudentsPage({
   searchParams,
 }: {
-  searchParams: { q?: string; grade?: string; section?: string; status?: string }
+  searchParams: {
+    q?: string
+    grade?: string
+    section?: string
+    status?: string
+    page?: string
+  }
 }) {
   await requireRole('coordinator')
   const supabase = createClient()
 
-  const [{ data: currentYear }, { data: grades }, { data: rawStudents }] = await Promise.all([
-    supabase.from('school_years').select('id, name').eq('is_current', true).maybeSingle(),
-    supabase.from('grades').select('id, name').order('id'),
-    supabase.from('students').select(`
+  const { q, grade, section, status } = searchParams
+  const { page, from, to } = getPageRange(searchParams.page)
+
+  // El año activo sale de la caché de referencia (misma fila para todos los
+  // usuarios, ver lib/reference-data.ts) en vez de consultarse en cada carga.
+  const currentYear = await getCurrentSchoolYear()
+
+  // Todos los filtros se aplican en Postgres. Es obligatorio para paginar:
+  // si una parte se filtrara en memoria, el total y el corte de página
+  // dejarían de coincidir con lo que realmente se muestra.
+  //
+  // `enrollments!inner` se usa SOLO cuando hay un filtro que depende de la
+  // matrícula (grado, sección o estado de matrícula). Sin esos filtros se
+  // usa el join normal, para no esconder a los alumnos sin salón asignado —
+  // que son justamente los que la coordinadora necesita ver para asignarlos.
+  const enrollmentStatus =
+    status && !['active', 'inactive'].includes(status) ? status : undefined
+  const needsInnerEnrollment = Boolean(grade || section || enrollmentStatus)
+  const enrollmentJoin = needsInnerEnrollment ? 'enrollments!inner' : 'enrollments'
+  const classroomJoin = needsInnerEnrollment ? 'classrooms!inner' : 'classrooms'
+
+  const selectShape = `
       id,
       birth_date,
       profiles!inner(full_name, is_active),
-      enrollments(id, status, school_year_id, classrooms(id, section, grade_id, grades(id, name)))
-    `),
+      ${enrollmentJoin}(id, status, school_year_id, ${classroomJoin}(id, section, grade_id, grades(id, name)))
+    `
+
+  // Los filtros se aplican igual al conteo y a la página de datos, así que
+  // viven en un solo lugar. El tipo del builder de PostgREST es demasiado
+  // recursivo para encadenarlo genéricamente, de ahí el `any` acotado a esta
+  // función (los nombres de columna sí se validan contra la base en runtime).
+  type Filterable = {
+    ilike: (col: string, val: string) => Filterable
+    eq: (col: string, val: unknown) => Filterable
+  }
+  function applyFilters<T>(builder: T): T {
+    let b = builder as unknown as Filterable
+    if (q) b = b.ilike('profiles.full_name', `%${q}%`)
+    if (status === 'active') b = b.eq('profiles.is_active', true)
+    if (status === 'inactive') b = b.eq('profiles.is_active', false)
+    if (currentYear?.id) b = b.eq('enrollments.school_year_id', currentYear.id)
+    if (enrollmentStatus) b = b.eq('enrollments.status', enrollmentStatus)
+    if (grade) b = b.eq('enrollments.classrooms.grade_id', Number(grade))
+    if (section) b = b.eq('enrollments.classrooms.section', section)
+    return b as unknown as T
+  }
+
+  const [grades, { count: totalRows }, { data: rawStudents }] = await Promise.all([
+    // Grados: dato de referencia cacheado, igual para todos los usuarios.
+    getGrades(),
+    applyFilters(supabase.from('students').select(selectShape, { count: 'exact', head: true })),
+    applyFilters(supabase.from('students').select(selectShape)).range(from, to),
   ])
 
-  const students = (rawStudents ?? []).map((s) => {
+  const totalPages = getTotalPages(totalRows)
+
+  const students = ((rawStudents as StudentQueryRow[] | null) ?? []).map((s) => {
     const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles
     const currentEnrollment = s.enrollments?.find((e) => e.school_year_id === currentYear?.id) ?? null
-    const classroom = currentEnrollment?.classrooms as any
+    const classroomRel = currentEnrollment?.classrooms
+    const classroom = Array.isArray(classroomRel) ? classroomRel[0] : classroomRel
     return {
       id: s.id,
       full_name: profile?.full_name ?? '',
@@ -62,26 +134,34 @@ export default async function StudentsPage({
     }
   })
 
-  // Apply filters
-  const { q, grade, section, status } = searchParams
-  const filtered = students.filter((s) => {
-    if (q && !s.full_name.toLowerCase().includes(q.toLowerCase())) return false
-    if (grade && String(s.enrollment?.grade_id) !== grade) return false
-    if (section && s.enrollment?.section !== section) return false
-    if (status === 'inactive' && s.is_active) return false
-    if (status === 'active' && !s.is_active) return false
-    if (status && !['active', 'inactive'].includes(status) && s.enrollment?.status !== status) return false
-    return true
-  })
+  // Ya no hay filtrado en memoria: todo se resolvió en la consulta de arriba,
+  // que es lo que permite que el contador y la paginación sean correctos.
+  const filtered = students
 
-  const sections = Array.from(new Set(students.map((s) => s.enrollment?.section).filter(Boolean))).sort()
+  // Las secciones del desplegable salen de los salones del año, NO de los
+  // alumnos de la página actual: con paginación, derivarlas de la página
+  // visible dejaría fuera secciones que sí existen y el filtro quedaría
+  // incompleto según en qué página estuviera parada la coordinadora.
+  const { data: sectionRows } = currentYear?.id
+    ? await supabase
+        .from('classrooms')
+        .select('section')
+        .eq('school_year_id', currentYear.id)
+    : { data: [] as { section: string }[] }
+
+  const sections = Array.from(
+    new Set(((sectionRows as { section: string }[] | null) ?? []).map((c) => c.section)),
+  ).sort()
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]">Alumnos</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">{filtered.length} de {students.length} alumnos</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+            {totalRows ?? 0} alumno{totalRows === 1 ? '' : 's'}
+            {totalPages > 1 && ` · página ${page} de ${totalPages}`}
+          </p>
         </div>
         <Button asChild>
           <Link href="/coordinator/students/new">+ Nuevo alumno</Link>
@@ -138,6 +218,15 @@ export default async function StudentsPage({
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalRows={totalRows ?? 0}
+        basePath="/coordinator/students"
+        searchParams={searchParams}
+        itemLabel="alumnos"
+      />
     </div>
   )
 }

@@ -1,15 +1,17 @@
 import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentSchoolYear, getGrades } from '@/lib/reference-data'
 import { NewClassroomForm } from './_components/new-classroom-form'
 
 export default async function NewClassroomPage() {
   await requireRole('coordinator')
   const supabase = createClient()
 
-  const [{ data: currentYear }, { data: grades }, { data: teacherProfiles }] = await Promise.all([
-    supabase.from('school_years').select('id, name').eq('is_current', true).maybeSingle(),
-    supabase.from('grades').select('id, name').order('id'),
+  const [currentYear, grades, { data: teacherProfiles }] = await Promise.all([
+    // Año escolar y grados vienen de la caché de referencia (lib/reference-data.ts)
+    getCurrentSchoolYear(),
+    getGrades(),
     supabase.from('profiles').select('id, full_name').eq('role', 'teacher').eq('is_active', true).order('full_name'),
   ])
 

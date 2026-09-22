@@ -6,18 +6,23 @@
 // Usado tanto en la página de creación (/teacher/evaluations/new) como en la
 // de edición (/teacher/evaluations/[id]/edit). Recibe las listas de estudiantes
 // y categorías, y opcionalmente los datos existentes para pre-llenar el form.
+//
+// El guardado ocurre en un Server Action (../actions.ts). Antes se escribía
+// directo con el SDK de Supabase desde el navegador, lo que metía ~75 kB de
+// JS en estas dos páginas. Además los campos ahora son no controlados
+// (defaultValue + FormData): no hay un re-render de React por cada tecla,
+// que es justo lo que se siente lento en una máquina modesta.
 // ---------------------------------------------------------------------------
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { useFormState, useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Loader2 } from 'lucide-react'
+import { saveEvaluation, type EvaluationState } from '../actions'
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -60,6 +65,8 @@ export interface EvaluationFormProps {
   mode?: 'create' | 'edit'
 }
 
+const INITIAL: EvaluationState = { error: null }
+
 // ---------------------------------------------------------------------------
 // Componente
 // ---------------------------------------------------------------------------
@@ -73,114 +80,21 @@ export function EvaluationForm({
   submitLabel = 'Registrar evaluación',
   mode = 'create',
 }: EvaluationFormProps) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [state, action] = useFormState(saveEvaluation, INITIAL)
 
-  // Campos del formulario (pre-llenados si es edición)
-  const [studentId, setStudentId] = useState(evaluation?.student_id ?? '')
-  const [categoryId, setCategoryId] = useState(evaluation?.category_id ?? '')
-  const [score, setScore] = useState(evaluation?.score?.toString() ?? '')
-  const [maxScore, setMaxScore] = useState(
-    evaluation?.max_score?.toString() ?? '20',
-  )
-  const [date, setDate] = useState(
-    evaluation?.evaluation_date ??
-      new Date().toISOString().slice(0, 10),
-  )
-  const [notes, setNotes] = useState(evaluation?.notes ?? '')
-
-  // Validación básica
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-
-    // Validar campos requeridos
-    if (!studentId) {
-      setError('Seleccioná un estudiante.')
-      return
-    }
-    if (!categoryId) {
-      setError('Seleccioná una categoría de evaluación.')
-      return
-    }
-
-    const scoreNum = parseFloat(score)
-    const maxScoreNum = parseFloat(maxScore)
-
-    if (isNaN(scoreNum) || scoreNum < 0) {
-      setError('La nota debe ser un número positivo.')
-      return
-    }
-    if (isNaN(maxScoreNum) || maxScoreNum <= 0) {
-      setError('La nota máxima debe ser mayor a 0.')
-      return
-    }
-    if (scoreNum > maxScoreNum) {
-      setError(`La nota (${scoreNum}) no puede superar la nota máxima (${maxScoreNum}).`)
-      return
-    }
-    if (!date) {
-      setError('Seleccioná una fecha de evaluación.')
-      return
-    }
-
-    setLoading(true)
-
-    const supabase = createClient()
-
-    if (mode === 'create') {
-      const { error: insertError } = await supabase
-        .from('presential_evaluations')
-        .insert({
-          student_id: studentId,
-          category_id: categoryId,
-          classroom_id: classroomId,
-          teacher_id: teacherId,
-          score: scoreNum,
-          max_score: maxScoreNum,
-          evaluation_date: date,
-          notes: notes.trim() || null,
-        })
-
-      if (insertError) {
-        setError(insertError.message)
-        setLoading(false)
-        return
-      }
-    } else {
-      // Modo edición
-      const { error: updateError } = await supabase
-        .from('presential_evaluations')
-        .update({
-          student_id: studentId,
-          category_id: categoryId,
-          score: scoreNum,
-          max_score: maxScoreNum,
-          evaluation_date: date,
-          notes: notes.trim() || null,
-        })
-        .eq('id', evaluation?.id ?? '')
-
-      if (updateError) {
-        setError(updateError.message)
-        setLoading(false)
-        return
-      }
-    }
-
-    // Redirigir a la lista de evaluaciones
-    router.push('/teacher/evaluations')
-    router.refresh()
-  }
-
-  // --- Vista ---
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form action={action} className="space-y-4">
+      <input type="hidden" name="mode" value={mode} />
+      <input type="hidden" name="classroom_id" value={classroomId} />
+      <input type="hidden" name="teacher_id" value={teacherId} />
+      {evaluation?.id && (
+        <input type="hidden" name="evaluation_id" value={evaluation.id} />
+      )}
+
       {/* Mensaje de error */}
-      {error && (
+      {state.error && (
         <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-          {error}
+          {state.error}
         </div>
       )}
 
@@ -188,18 +102,18 @@ export function EvaluationForm({
       <div className="space-y-1.5">
         <Label htmlFor="student_id">Estudiante</Label>
         {students.length === 0 ? (
-          <p className="text-sm text-gray-400 py-2">
+          <p className="text-sm text-muted-foreground py-2">
             No hay estudiantes matriculados en tu salón.
           </p>
         ) : (
           <Select
             id="student_id"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
+            name="student_id"
+            defaultValue={evaluation?.student_id ?? ''}
             required
           >
             <option value="" disabled>
-              Seleccioná un estudiante
+              Selecciona un estudiante
             </option>
             {students.map((s) => (
               <option key={s.student_id} value={s.student_id}>
@@ -214,19 +128,19 @@ export function EvaluationForm({
       <div className="space-y-1.5">
         <Label htmlFor="category_id">Categoría de evaluación</Label>
         {categories.length === 0 ? (
-          <p className="text-sm text-gray-400 py-2">
-            No hay categorías configuradas para tu grado. Contactá a la
+          <p className="text-sm text-muted-foreground py-2">
+            No hay categorías configuradas para tu grado. Contacta a la
             coordinación.
           </p>
         ) : (
           <Select
             id="category_id"
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
+            name="category_id"
+            defaultValue={evaluation?.category_id ?? ''}
             required
           >
             <option value="" disabled>
-              Seleccioná una categoría
+              Selecciona una categoría
             </option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
@@ -243,11 +157,11 @@ export function EvaluationForm({
           <Label htmlFor="score">Nota</Label>
           <Input
             id="score"
+            name="score"
             type="number"
             step="0.01"
             min="0"
-            value={score}
-            onChange={(e) => setScore(e.target.value)}
+            defaultValue={evaluation?.score?.toString() ?? ''}
             placeholder="Ej: 15"
             required
           />
@@ -257,11 +171,11 @@ export function EvaluationForm({
           <Label htmlFor="max_score">Nota máxima</Label>
           <Input
             id="max_score"
+            name="max_score"
             type="number"
             step="0.01"
             min="0.01"
-            value={maxScore}
-            onChange={(e) => setMaxScore(e.target.value)}
+            defaultValue={evaluation?.max_score?.toString() ?? '20'}
             placeholder="20"
             required
           />
@@ -273,9 +187,11 @@ export function EvaluationForm({
         <Label htmlFor="evaluation_date">Fecha de evaluación</Label>
         <Input
           id="evaluation_date"
+          name="evaluation_date"
           type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
+          defaultValue={
+            evaluation?.evaluation_date ?? new Date().toISOString().slice(0, 10)
+          }
           required
         />
       </div>
@@ -285,23 +201,32 @@ export function EvaluationForm({
         <Label htmlFor="notes">Observaciones</Label>
         <Textarea
           id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          name="notes"
+          defaultValue={evaluation?.notes ?? ''}
           placeholder="Observaciones sobre la evaluación (opcional)"
           rows={3}
         />
       </div>
 
       {/* Botones */}
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={loading}>
-          {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-          {submitLabel}
-        </Button>
-        <Button type="button" variant="outline" asChild>
-          <Link href="/teacher/evaluations">Cancelar</Link>
-        </Button>
-      </div>
+      <SubmitRow submitLabel={submitLabel} />
     </form>
+  )
+}
+
+/** Subcomponente: useFormStatus solo funciona dentro del <form>. */
+function SubmitRow({ submitLabel }: { submitLabel: string }) {
+  const { pending } = useFormStatus()
+
+  return (
+    <div className="flex gap-3 pt-2">
+      <Button type="submit" disabled={pending}>
+        {pending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+        {submitLabel}
+      </Button>
+      <Button type="button" variant="outline" asChild>
+        <Link href="/teacher/evaluations">Cancelar</Link>
+      </Button>
+    </div>
   )
 }

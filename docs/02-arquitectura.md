@@ -28,13 +28,13 @@
         └─────────────┼───────────────────┘
                       │ API calls
               ┌───────▼────────┐
-              │  Gemini 2.0    │  ← Primary AI
+              │  Gemini 3.6    │  ← Primary AI
               │  Flash (free)  │
               └───────┬────────┘
                       │ fallback
               ┌───────▼────────┐
-              │  Groq Llama    │  ← Fallback AI
-              │  3.1 (free)    │
+              │ Groq gpt-oss   │  ← Fallback AI
+              │  -20b (free)   │
               └────────────────┘
 ```
 
@@ -70,7 +70,7 @@
 | Deployments | 100/día | < 5/día |
 | Serverless functions | 100 GB-hrs | Mínimo (usamos Supabase EF) |
 
-### Gemini 2.0 Flash Free
+### Gemini 3.6 Flash Free
 | Recurso | Límite | Estimado |
 |---|---|---|
 | Requests por minuto | 15 RPM | Pico estimado: 8-10 RPM (uso desde casa) |
@@ -81,7 +81,12 @@
 | Recurso | Límite |
 |---|---|
 | Requests por minuto | 30 RPM |
-| Modelo | Llama 3.1 8B |
+| Modelo | `openai/gpt-oss-20b` |
+
+Nota: los nombres de modelo de Gemini y Groq cambiaron durante el desarrollo
+(ver `docs/07-agente-ia.md`) — ambos proveedores retiran versiones con el
+tiempo. Verificar disponibilidad del modelo antes de asumir que el nombre
+documentado sigue vigente.
 
 ## Rutas de la aplicación Next.js
 

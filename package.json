@@ -3,13 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "docx": "python3 scripts/md-a-docx.py",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:seguridad": "playwright test --project=provision --project=seguridad",
+    "test:limpiar": "npx tsx tests/e2e/seguridad/limpiar.ts",
+    "test:flujos": "playwright test --project=provision --project=roles --project=alumno --project=docente",
+    "test:todo": "playwright test --project=provision --project=seguridad --project=roles --project=alumno --project=docente",
+    "iconos": "node scripts/generar-iconos.mjs"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.6",
@@ -18,7 +24,6 @@
     "@supabase/supabase-js": "^2.45.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "framer-motion": "^11.0.0",
     "lucide-react": "^0.441.0",
     "next": "^14.2.30",
     "radix-ui": "^1.5.0",
@@ -38,7 +43,26 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.30",
     "postcss": "^8.4.47",
+    "supabase": "^2.116.0",
     "tailwindcss": "^3.4.12",
     "typescript": "^5.6.2"
-  }
+  },
+  "description": "Sistema web progresivo (PWA) para gestión administrativa y aprendizaje gamificado en educación primaria. Trabajo Especial de Grado — Ingeniería en Informática.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Danydev018/EduVerso.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Danydev018/EduVerso/issues"
+  },
+  "homepage": "https://github.com/Danydev018/EduVerso#readme"
 }

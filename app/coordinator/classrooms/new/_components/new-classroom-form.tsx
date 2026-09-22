@@ -32,7 +32,7 @@ export function NewClassroomForm({ currentYear, grades, teachers }: Props) {
           id="grade_id"
           name="grade_id"
           required
-          className="flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="flex h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         >
           <option value="">Seleccionar grado</option>
           {grades.map((g) => (
@@ -61,7 +61,7 @@ export function NewClassroomForm({ currentYear, grades, teachers }: Props) {
           id="teacher_id"
           name="teacher_id"
           required
-          className="flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="flex h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         >
           <option value="">Seleccionar docente</option>
           {teachers.map((t) => (

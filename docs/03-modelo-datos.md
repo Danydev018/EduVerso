@@ -193,6 +193,12 @@ create table public.presential_evaluations (
 
 ```sql
 -- Actualización atómica de XP (llamado desde Edge Function complete-step)
+--
+-- La rama INSERT calcula el nivel inicial con la misma fórmula que la rama
+-- UPDATE (ON CONFLICT) — antes hardcodeaba level=1, así que el primer XP del
+-- año de un alumno podía dejarlo en nivel 1 aunque ya alcanzara nivel 2+,
+-- hasta su segunda acreditación de XP. Encontrado en testing de integración
+-- de Semana 10, corregido en supabase/migrations/06_fix_award_xp_level.sql.
 create or replace function public.award_xp(
   p_student_id     uuid,
   p_school_year_id uuid,
@@ -207,7 +213,10 @@ declare
   v_new_level integer;
 begin
   insert into student_points (student_id, school_year_id, classroom_id, total_xp, level)
-  values (p_student_id, p_school_year_id, p_classroom_id, p_xp_amount, 1)
+  values (
+    p_student_id, p_school_year_id, p_classroom_id, p_xp_amount,
+    greatest(1, floor(sqrt(p_xp_amount::numeric / 10))::int + 1)
+  )
   on conflict (student_id, school_year_id)
   do update set
     total_xp   = student_points.total_xp + p_xp_amount,

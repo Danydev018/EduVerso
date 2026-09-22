@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentSchoolYear, getGrades } from '@/lib/reference-data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -54,15 +55,7 @@ export default async function TeacherClassroomPage() {
   const supabase = createClient()
 
   // --- 1. Obtener año escolar activo ---
-  const { data: currentYear, error: yearError } = await supabase
-    .from('school_years')
-    .select('id, name')
-    .eq('is_current', true)
-    .maybeSingle()
-
-  if (yearError) {
-    console.error('Error al obtener año escolar:', yearError.message)
-  }
+  const currentYear = await getCurrentSchoolYear()
 
   // Sin año activo: el docente no puede ver datos
   if (!currentYear) {
@@ -70,11 +63,11 @@ export default async function TeacherClassroomPage() {
       <Card>
         <CardContent className="py-8 text-center">
           <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             No hay un año escolar activo configurado.
           </p>
-          <p className="text-sm text-gray-400 mt-2">
-            Contactá a la coordinación para que active un año escolar.
+          <p className="text-sm text-muted-foreground mt-2">
+            Contacta a la coordinación para que active un año escolar.
           </p>
         </CardContent>
       </Card>
@@ -87,6 +80,12 @@ export default async function TeacherClassroomPage() {
     .select('id, section, grade_id')
     .eq('teacher_id', user.id)
     .eq('school_year_id', currentYear.id)
+    // Un docente puede tener más de un salón (ej. 3ro A y 3ro B).
+    // Sin ordenar y acotar, maybeSingle() devuelve error PGRST116 y el
+    // panel le dice "no tienes salón asignado" aunque tenga varios.
+    .order('grade_id')
+    .order('section')
+    .limit(1)
     .maybeSingle()
 
   if (classroomError) {
@@ -98,37 +97,34 @@ export default async function TeacherClassroomPage() {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">
-            No tenés un salón asignado para el año escolar activo.
+          <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">
+            No tienes un salón asignado para el año escolar activo.
           </p>
-          <p className="text-sm text-gray-400 mt-2">
-            Solicitá a la coordinación que te asigne un salón.
+          <p className="text-sm text-muted-foreground mt-2">
+            Solicita a la coordinación que te asigne un salón.
           </p>
         </CardContent>
       </Card>
     )
   }
 
-  // --- 3. Obtener nombre del grado ---
-  const { data: grade } = await supabase
-    .from('grades')
-    .select('name')
-    .eq('id', classroom.grade_id)
-    .maybeSingle()
+  // --- 3. Grado y matrículas en paralelo ---
+  // (no dependen entre sí; antes eran dos viajes en serie)
+  const [{ data: grade }, { data: enrollmentRows }] = await Promise.all([
+    getGrades().then((gs) => ({ data: gs.find((g) => g.id === classroom.grade_id) ?? null })),
+    supabase
+      .from('enrollments')
+      .select('student_id')
+      .eq('classroom_id', classroom.id)
+      .eq('school_year_id', currentYear.id)
+      .eq('status', 'active'),
+  ])
 
   const gradeName = (grade as { name: string } | null)?.name ?? ''
   const classroomName = gradeName
-    ? `${gradeName} Grado ${classroom.section}`
+    ? `${gradeName} — Sección ${classroom.section}`
     : `Sección ${classroom.section}`
-
-  // --- 4. Obtener estudiantes matriculados activos ---
-  const { data: enrollmentRows } = await supabase
-    .from('enrollments')
-    .select('student_id')
-    .eq('classroom_id', classroom.id)
-    .eq('school_year_id', currentYear.id)
-    .eq('status', 'active')
 
   const typedEnrollments = (enrollmentRows as EnrollmentRow[] | null) ?? []
   const studentIds = typedEnrollments.map((e) => e.student_id)
@@ -140,10 +136,10 @@ export default async function TeacherClassroomPage() {
       <div className="space-y-4">
         {/* Encabezado con nombre del salón y año */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             {classroomName}
           </h1>
-          <p className="text-gray-500 mt-1 flex items-center gap-2">
+          <p className="text-muted-foreground mt-1 flex items-center gap-2">
             <GraduationCap className="w-4 h-4" />
             {currentYear.name}
           </p>
@@ -151,12 +147,12 @@ export default async function TeacherClassroomPage() {
 
         <Card>
           <CardContent className="py-8 text-center">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">
+            <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">
               No hay estudiantes matriculados en este salón.
             </p>
-            <p className="text-sm text-gray-400 mt-2">
-              Solicitá a la coordinación que inscriba estudiantes.
+            <p className="text-sm text-muted-foreground mt-2">
+              Solicita a la coordinación que inscriba estudiantes.
             </p>
           </CardContent>
         </Card>
@@ -181,11 +177,16 @@ export default async function TeacherClassroomPage() {
       .eq('school_year_id', currentYear.id)
       .in('student_id', studentIds),
 
-    // Progreso de actividades más reciente por estudiante
+    // Progreso de actividades más reciente por estudiante. Se filtran los
+    // registros sin completar: Postgres ordena NULL primero en DESC por
+    // defecto, así que sin este filtro un alumno con una actividad en
+    // progreso (completed_at null) "tapaba" su última actividad realmente
+    // completada en el mapa de abajo.
     supabase
       .from('activity_progress')
       .select('student_id, completed_at')
       .in('student_id', studentIds)
+      .not('completed_at', 'is', null)
       .order('completed_at', { ascending: false }),
   ])
 
@@ -240,73 +241,73 @@ export default async function TeacherClassroomPage() {
     <div className="space-y-6">
         {/* Encabezado: nombre del salón, año escolar y cantidad de estudiantes */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             {classroomName}
           </h1>
-          <p className="text-gray-500 mt-1 flex items-center gap-2 flex-wrap">
+          <p className="text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
             <GraduationCap className="w-4 h-4" />
             {currentYear.name}
-            <span className="text-gray-300">·</span>
+            <span className="text-muted-foreground">·</span>
             <Users className="w-4 h-4" />
             {totalEstudiantes} estudiante{totalEstudiantes !== 1 ? 's' : ''}
           </p>
         </div>
 
         {/* Tabla de estudiantes */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+        <div className="bg-card rounded-lg border border-border overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-muted border-b border-border">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                   Nombre
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
                   Nivel actual
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                   XP Total
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
                   Última actividad
                 </th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">
+                <th className="text-center px-4 py-3 font-medium text-muted-foreground">
                   Estado
                 </th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">
                   Acciones
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {students.map((student) => (
-                <tr key={student.student_id} className="hover:bg-gray-50">
+                <tr key={student.student_id} className="hover:bg-muted/50">
                   {/* Nombre completo */}
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                  <td className="px-4 py-3 font-medium text-foreground">
                     {student.full_name}
                   </td>
 
                   {/* Nivel actual */}
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {student.level !== null ? (
                       <Badge variant="secondary">Nivel {student.level}</Badge>
                     ) : (
-                      <span className="text-gray-400 italic">—</span>
+                      <span className="text-muted-foreground italic">—</span>
                     )}
                   </td>
 
                   {/* XP Total */}
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {student.total_xp > 0 ? (
                       <span className="font-semibold">
                         {student.total_xp.toLocaleString('es-AR')} XP
                       </span>
                     ) : (
-                      <span className="text-gray-400 italic">0 XP</span>
+                      <span className="text-muted-foreground italic">0 XP</span>
                     )}
                   </td>
 
                   {/* Última actividad */}
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                     {student.last_activity ? (
                       new Date(student.last_activity).toLocaleDateString(
                         'es-AR',
@@ -317,7 +318,7 @@ export default async function TeacherClassroomPage() {
                         },
                       )
                     ) : (
-                      <span className="text-gray-400 italic">
+                      <span className="text-muted-foreground italic">
                         Sin actividad
                       </span>
                     )}

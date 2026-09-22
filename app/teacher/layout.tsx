@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { href: '/teacher/dashboard', label: 'Inicio' },
   { href: '/teacher/classroom', label: 'Mi Salón' },
   { href: '/teacher/activities', label: 'Actividades' },
+  { href: '/teacher/lecciones', label: 'Lecciones' },
   { href: '/teacher/evaluations', label: 'Evaluaciones' },
 ]
 
@@ -20,7 +21,7 @@ export default async function TeacherLayout({
   return (
     <div className="min-h-screen flex flex-col relative" data-theme="admin">
       <BackgroundEffects />
-      <header className="border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-10">
+      <header className="border-b border-border bg-card sticky top-0 z-10">
         <div className="container mx-auto flex items-center justify-between py-3 gap-4">
           <div className="flex items-center gap-6">
             <div>
@@ -47,7 +48,7 @@ export default async function TeacherLayout({
           </div>
         </div>
         {/* Navegación móvil */}
-        <div className="md:hidden border-t border-border overflow-x-auto bg-card/50 backdrop-blur-md">
+        <div className="md:hidden border-t border-border overflow-x-auto bg-card">
           <div className="flex gap-1 px-3 py-2 min-w-max">
             {NAV_LINKS.map(({ href, label }) => (
               <Link
@@ -62,7 +63,7 @@ export default async function TeacherLayout({
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto py-6 px-4">{children}</main>
+      <main className="flex-1 container mx-auto py-4 px-4">{children}</main>
     </div>
   )
 }

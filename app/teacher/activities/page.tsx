@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentSchoolYear } from '@/lib/reference-data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { BookOpen, Plus, AlertCircle, ArrowRight } from 'lucide-react'
+import { BookOpen, Plus, AlertCircle, ArrowRight, Library, Wrench } from 'lucide-react'
+import { shipPartIcon } from '@/lib/ship-parts'
 
 interface ActivityRow {
   id: string
@@ -13,6 +15,7 @@ interface ActivityRow {
   available_from: string | null
   available_until: string | null
   created_at: string
+  ship_parts: { name: string; icon: string; color: string } | null
 }
 
 interface ProgressRow {
@@ -24,18 +27,14 @@ export default async function TeacherActivitiesPage() {
   const user = await requireRole('teacher')
   const supabase = createClient()
 
-  const { data: currentYear } = await supabase
-    .from('school_years')
-    .select('id, name')
-    .eq('is_current', true)
-    .maybeSingle()
+  const currentYear = await getCurrentSchoolYear()
 
   if (!currentYear) {
     return (
       <Card>
         <CardContent className="py-8 text-center">
           <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-          <p className="text-gray-600">No hay un año escolar activo configurado.</p>
+          <p className="text-muted-foreground">No hay un año escolar activo configurado.</p>
         </CardContent>
       </Card>
     )
@@ -46,14 +45,20 @@ export default async function TeacherActivitiesPage() {
     .select('id')
     .eq('teacher_id', user.id)
     .eq('school_year_id', currentYear.id)
+    // Un docente puede tener más de un salón (ej. 3ro A y 3ro B).
+    // Sin ordenar y acotar, maybeSingle() devuelve error PGRST116 y el
+    // panel le dice "no tienes salón asignado" aunque tenga varios.
+    .order('grade_id')
+    .order('section')
+    .limit(1)
     .maybeSingle()
 
   if (!classroom) {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No tenés un salón asignado.</p>
+          <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">No tienes un salón asignado.</p>
         </CardContent>
       </Card>
     )
@@ -70,7 +75,7 @@ export default async function TeacherActivitiesPage() {
       .eq('status', 'active'),
     supabase
       .from('activities')
-      .select('id, title, status, available_from, available_until, created_at')
+      .select('id, title, status, available_from, available_until, created_at, ship_parts(name, icon, color)')
       .eq('classroom_id', classroom.id)
       .order('created_at', { ascending: false }),
   ])
@@ -87,9 +92,20 @@ export default async function TeacherActivitiesPage() {
     progressRows = (data as ProgressRow[] | null) ?? []
   }
 
+  // Un solo recorrido para contar completados por actividad, en vez de un
+  // `filter` sobre todo el arreglo por cada actividad (O(actividades × progresos)).
+  const completadosPorActividad = new Map<string, number>()
+  for (const p of progressRows) {
+    if (p.completed_at !== null) {
+      completadosPorActividad.set(
+        p.activity_id,
+        (completadosPorActividad.get(p.activity_id) ?? 0) + 1,
+      )
+    }
+  }
+
   const activitiesWithProgress = activities.map((a) => {
-    const rows = progressRows.filter((p) => p.activity_id === a.id)
-    const completados = rows.filter((p) => p.completed_at !== null).length
+    const completados = completadosPorActividad.get(a.id) ?? 0
     const porcentaje =
       totalEstudiantes > 0
         ? Math.round((completados / totalEstudiantes) * 100)
@@ -101,56 +117,76 @@ export default async function TeacherActivitiesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Actividades</h1>
-          <p className="text-gray-500 mt-1 text-sm">
-            Gestioná las actividades de tu salón.
+          <h1 className="text-2xl font-bold text-foreground">Actividades</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Gestiona las actividades de tu salón.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/teacher/activities/new">
-            <Plus className="w-4 h-4 mr-1" />
-            Nueva actividad
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild>
+            <Link href="/teacher/activities/repositorio">
+              <Library className="w-4 h-4 mr-1" />
+              Repositorio
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/teacher/activities/new">
+              <Plus className="w-4 h-4 mr-1" />
+              Crear la mía
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {activitiesWithProgress.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">Todavía no creaste ninguna actividad.</p>
-            <p className="text-sm text-gray-400 mt-2">
-              Empezá creando una para tu salón.
+            <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Todavía no creaste ninguna actividad.</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Elige una del repositorio o escribe la tuya.
             </p>
+            <Button className="mt-4" asChild>
+              <Link href="/teacher/activities/repositorio">
+                <Library className="w-4 h-4 mr-1" />
+                Ver el repositorio
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+        <div className="bg-card rounded-lg border border-border overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-muted border-b border-border">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                   Título
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                  Repara
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                   Estado
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
                   Disponibilidad
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                   Completitud
                 </th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">
                   Acciones
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {activitiesWithProgress.map((a) => (
-                <tr key={a.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                <tr key={a.id} className="hover:bg-muted/50">
+                  <td className="px-4 py-3 font-medium text-foreground">
                     {a.title}
+                  </td>
+                  <td className="px-4 py-3">
+                    <ShipPartCell part={a.ship_parts} />
                   </td>
                   <td className="px-4 py-3">
                     <Badge
@@ -169,13 +205,13 @@ export default async function TeacherActivitiesPage() {
                           : 'Borrador'}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                     {formatAvailability(a.available_from, a.available_until)}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{a.porcentaje}%</span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-muted-foreground">
                         ({a.completados}/{totalEstudiantes})
                       </span>
                     </div>
@@ -196,6 +232,29 @@ export default async function TeacherActivitiesPage() {
         </div>
       )}
     </div>
+  )
+}
+
+/** La pieza que repara la actividad, o un guion si el docente no eligió una. */
+function ShipPartCell({
+  part,
+}: {
+  part: { name: string; icon: string; color: string } | null
+}) {
+  if (!part) {
+    return (
+      <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
+        <Wrench className="w-3.5 h-3.5" />
+        Sin asignar
+      </span>
+    )
+  }
+  const Icon = shipPartIcon(part.icon)
+  return (
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-foreground">
+      <Icon className={`w-3.5 h-3.5 ${part.color}`} />
+      {part.name}
+    </span>
   )
 }
 

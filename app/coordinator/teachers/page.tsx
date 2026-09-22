@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentSchoolYear } from '@/lib/reference-data'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ToggleTeacherButton } from './_components/toggle-teacher-button'
@@ -9,22 +10,30 @@ export default async function TeachersPage() {
   await requireRole('coordinator')
   const supabase = createClient()
 
-  const [{ data: teachers }, { data: currentYear }] = await Promise.all([
+  const [{ data: teachers }, currentYear] = await Promise.all([
     supabase.from('profiles').select('id, full_name, is_active').eq('role', 'teacher').order('full_name'),
-    supabase.from('school_years').select('id').eq('is_current', true).maybeSingle(),
+    getCurrentSchoolYear(),
   ])
 
-  // Get classrooms for current year to show teacher assignment
-  let classroomsByTeacher: Record<string, string> = {}
+  // Salones del año activo, agrupados por docente.
+  //
+  // Se acumulan en un arreglo: antes se asignaba `mapa[teacher_id] = salón`,
+  // así que un docente a cargo de más de un salón (ej. 3ro A y 3ro B) solo
+  // mostraba el último que devolvía la consulta y parecía tener uno solo.
+  const classroomsByTeacher: Record<string, string[]> = {}
   if (currentYear?.id) {
     const { data: classrooms } = await supabase
       .from('classrooms')
       .select('teacher_id, section, grades(name)')
       .eq('school_year_id', currentYear.id)
+      .order('grade_id')
+      .order('section')
 
     classrooms?.forEach((c) => {
-      const grade = (c.grades as any)?.name ?? ''
-      classroomsByTeacher[c.teacher_id] = `${grade} — ${c.section}`
+      // PostgREST tipa la relación como arreglo aunque sea 1:1
+      const gradeRel = c.grades as unknown as { name: string } | { name: string }[] | null
+      const grade = (Array.isArray(gradeRel) ? gradeRel[0] : gradeRel)?.name ?? ''
+      ;(classroomsByTeacher[c.teacher_id] ??= []).push(`${grade} — ${c.section}`)
     })
   }
 
@@ -62,7 +71,7 @@ export default async function TeachersPage() {
               <tr key={teacher.id} className="hover:bg-[hsl(var(--primary)/0.03)] transition-colors">
                 <td className="px-4 py-3 font-medium text-[hsl(var(--foreground))]">{teacher.full_name}</td>
                 <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">
-                  {classroomsByTeacher[teacher.id] ?? (
+                  {classroomsByTeacher[teacher.id]?.join(' · ') ?? (
                     <span className="text-[hsl(var(--muted-foreground))] italic">Sin salón asignado</span>
                   )}
                 </td>
