@@ -101,13 +101,23 @@ async function main() {
   await tomar(pa, '01-login.png', '/login')
   await anon.close()
 
+  // ── Coordinación ──
+  const cc = await nav.newContext({ viewport: VISTA, deviceScaleFactor: 2 })
+  const pc = await entrar(cc, 'qa.coordinador.a@eduverso.com', /coordinator/)
+  await tomarRecortado(pc, '02-coordinacion-tablero.png', '/coordinator/dashboard',
+    'div:has-text("Mantenimiento") >> nth=-1')
+  await tomarRecortado(pc, '03-coordinacion-alumnos.png', '/coordinator/students', 'table')
+  await tomarRecortado(pc, '04-coordinacion-salones.png', '/coordinator/classrooms', 'table')
+  await tomarRecortado(pc, '05-coordinacion-docentes.png', '/coordinator/teachers', 'table')
+  await cc.close()
+
   // ── Docente ──
   const cd = await nav.newContext({ viewport: VISTA, deviceScaleFactor: 2 })
   const pd = await entrar(cd, 'qa.docente.a@eduverso.com', /teacher\/dashboard/)
-  await tomar(pd, '02-docente-tablero.png')
-  await tomarRecortado(pd, '03-docente-salon.png', '/teacher/classroom', 'table')
-  await tomar(pd, '04-docente-actividades.png', '/teacher/activities')
-  await tomar(pd, '05-docente-lecciones.png', '/teacher/lecciones')
+  await tomar(pd, '06-docente-tablero.png')
+  await tomarRecortado(pd, '07-docente-salon.png', '/teacher/classroom', 'table')
+  await tomar(pd, '08-docente-actividades.png', '/teacher/activities')
+  await tomar(pd, '09-docente-lecciones.png', '/teacher/lecciones')
 
   // El editor de escenas: se entra por el primer tema de la lista, porque su
   // id depende de los datos y no se puede fijar en el script.
@@ -119,7 +129,7 @@ async function main() {
     await editar.click()
     await pd.waitForURL(/teacher\/lecciones\/.+/, { timeout: 40_000 })
     await pd.waitForLoadState('networkidle')
-    await tomar(pd, '06-docente-editor-leccion.png')
+    await tomar(pd, '10-docente-editor-leccion.png')
 
     // El lienzo es la pantalla que distingue al proyecto —catálogo de 131
     // piezas en 14 categorías— y vive tras la pestaña "Diseñar".
@@ -169,8 +179,8 @@ async function main() {
         figura tiene que mostrar juntas.
       */
       const editor = pd.locator('[data-lienzo]').first().locator('xpath=ancestor::div[3]')
-      await editor.screenshot({ path: path.join(SALIDA, '07-docente-lienzo.png') })
-      console.log(`  ${'07-docente-lienzo.png'.padEnd(34)} (elemento: editor de escenas)`)
+      await editor.screenshot({ path: path.join(SALIDA, '11-docente-lienzo.png') })
+      console.log(`  ${'11-docente-lienzo.png'.padEnd(34)} (elemento: editor de escenas)`)
     }
   } else {
     console.log('  (ningún tema con lección para abrir el editor)')
@@ -181,15 +191,15 @@ async function main() {
   const ca = await nav.newContext({ viewport: VISTA, deviceScaleFactor: 2 })
   const pl = await entrar(ca, 'qa.alumno.a@eduverso.com', /student\/(dashboard|intro)/)
   await saltarIntro(pl)
-  await tomar(pl, '08-alumno-tablero.png', '/student/dashboard')
-  await tomar(pl, '09-alumno-misiones.png', '/student/activities')
+  await tomar(pl, '12-alumno-tablero.png', '/student/dashboard')
+  await tomar(pl, '13-alumno-misiones.png', '/student/activities')
 
   const mision = pl.locator('a[href*="/student/activities/"]').first()
   if (await mision.count() > 0) {
     await mision.click()
     await pl.waitForURL(/student\/activities\/.+/, { timeout: 40_000 })
     await pl.waitForLoadState('networkidle')
-    await tomar(pl, '10-alumno-actividad.png')
+    await tomar(pl, '14-alumno-actividad.png')
   }
   await ca.close()
 

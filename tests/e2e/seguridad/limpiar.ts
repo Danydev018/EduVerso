@@ -25,6 +25,7 @@ if (!URL_SUPABASE || !CLAVE) {
 }
 
 const CORREOS_QA = [
+  'qa.coordinador.a@eduverso.com',
   'qa.docente.a@eduverso.com',
   'qa.docente.b@eduverso.com',
   'qa.alumno.a@eduverso.com',

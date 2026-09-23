@@ -116,6 +116,18 @@ provision('provisionar cuentas y salones de prueba', async () => {
   const temaGrado4 = await temaDe(4)
   const temaGrado3 = await temaDe(3)
 
+  // ── Coordinación ──
+  /*
+    El rol NO se pone por la API pública: `profiles_bloquear_escalada`
+    (migración 13) impide que nadie que no sea coordinación cambie un rol.
+    Acá se escribe con la clave de servicio, que es justamente el camino que
+    esa política deja abierto solo al servidor.
+  */
+  const coordinadorA = await asegurarUsuario(CUENTAS.coordinadorA.correo, CUENTAS.coordinadorA.clave)
+  await asegurarFila('profiles', {
+    id: coordinadorA, role: 'coordinator', full_name: CUENTAS.coordinadorA.nombre,
+  })
+
   // ── Docentes ──
   const docenteA = await asegurarUsuario(CUENTAS.docenteA.correo, CUENTAS.docenteA.clave)
   const docenteB = await asegurarUsuario(CUENTAS.docenteB.correo, CUENTAS.docenteB.clave)

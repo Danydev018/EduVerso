@@ -37,6 +37,7 @@ export const CLAVE_SERVICIO = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
 
 /** Cuentas que la batería provisiona y usa. Ver `00-provision.setup.ts`. */
 export const CUENTAS = {
+  coordinadorA: { correo: 'qa.coordinador.a@eduverso.com', clave: 'EduVerso.QA.2026', nombre: 'QA Coordinación A' },
   docenteA: { correo: 'qa.docente.a@eduverso.com', clave: 'EduVerso.QA.2026', nombre: 'QA Docente A' },
   docenteB: { correo: 'qa.docente.b@eduverso.com', clave: 'EduVerso.QA.2026', nombre: 'QA Docente B' },
   alumnoA: { correo: 'qa.alumno.a@eduverso.com', clave: 'EduVerso.QA.2026', nombre: 'QA Alumno A' },
