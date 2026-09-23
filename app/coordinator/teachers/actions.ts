@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireRole } from '@/lib/auth'
+import { mensajeDeError } from '@/lib/errores'
 
 type ActionState = { error: string | null }
 
@@ -33,7 +34,7 @@ export async function createTeacher(
   })
 
   if (authError || !authData.user) {
-    return { error: authError?.message ?? 'Error al crear el usuario.' }
+    return { error: mensajeDeError(authError, 'coordinator/teachers', 'Error al crear el usuario.') }
   }
 
   const { error: profileError } = await admin
@@ -42,7 +43,7 @@ export async function createTeacher(
 
   if (profileError) {
     await admin.auth.admin.deleteUser(authData.user.id)
-    return { error: profileError.message }
+    return { error: mensajeDeError(profileError, 'coordinator/teachers') }
   }
 
   revalidatePath('/coordinator/teachers')
@@ -64,7 +65,7 @@ export async function toggleTeacherActive(
     .update({ is_active: !currentActive })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'coordinator/teachers') }
 
   revalidatePath('/coordinator/teachers')
   return { error: null }

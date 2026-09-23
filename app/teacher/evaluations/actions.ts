@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { mensajeDeError } from '@/lib/errores'
 
 export type EvaluationState = { error: string | null }
 
@@ -65,7 +66,7 @@ export async function saveEvaluation(
       })
       .eq('id', evaluationId)
 
-    if (error) return { error: error.message }
+    if (error) return { error: mensajeDeError(error, 'teacher/evaluations') }
   } else {
     const { error } = await supabase.from('presential_evaluations').insert({
       student_id: studentId,
@@ -78,7 +79,7 @@ export async function saveEvaluation(
       notes: notes || null,
     })
 
-    if (error) return { error: error.message }
+    if (error) return { error: mensajeDeError(error, 'teacher/evaluations') }
   }
 
   revalidatePath('/teacher/evaluations')

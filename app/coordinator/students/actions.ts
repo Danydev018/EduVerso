@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { requireRole } from '@/lib/auth'
+import { mensajeDeError } from '@/lib/errores'
 
 type ActionState = { error: string | null }
 
@@ -35,7 +36,7 @@ export async function createStudent(
   })
 
   if (authError || !authData.user) {
-    return { error: authError?.message ?? 'Error al crear el usuario.' }
+    return { error: mensajeDeError(authError, 'coordinator/students', 'Error al crear el usuario.') }
   }
 
   const { error: profileError } = await admin
@@ -44,7 +45,7 @@ export async function createStudent(
 
   if (profileError) {
     await admin.auth.admin.deleteUser(authData.user.id)
-    return { error: profileError.message }
+    return { error: mensajeDeError(profileError, 'coordinator/students') }
   }
 
   const { error: studentError } = await admin
@@ -53,7 +54,7 @@ export async function createStudent(
 
   if (studentError) {
     await admin.auth.admin.deleteUser(authData.user.id)
-    return { error: studentError.message }
+    return { error: mensajeDeError(studentError, 'coordinator/students') }
   }
 
   revalidatePath('/coordinator/students')
@@ -81,14 +82,14 @@ export async function updateStudent(
     .update({ full_name })
     .eq('id', id)
 
-  if (profileError) return { error: profileError.message }
+  if (profileError) return { error: mensajeDeError(profileError, 'coordinator/students') }
 
   const { error: studentError } = await admin
     .from('students')
     .update({ birth_date })
     .eq('id', id)
 
-  if (studentError) return { error: studentError.message }
+  if (studentError) return { error: mensajeDeError(studentError, 'coordinator/students') }
 
   revalidatePath('/coordinator/students')
   redirect('/coordinator/students')
@@ -110,7 +111,7 @@ export async function toggleStudentActive(
     .update({ is_active: !currentActive })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'coordinator/students') }
 
   revalidatePath('/coordinator/students')
   return { error: null }
@@ -134,7 +135,7 @@ export async function withdrawStudent(
     .update({ is_active: false })
     .eq('id', studentId)
 
-  if (profileError) return { error: profileError.message }
+  if (profileError) return { error: mensajeDeError(profileError, 'coordinator/students') }
 
   if (enrollmentId) {
     const { error: enrollmentError } = await admin
@@ -142,7 +143,7 @@ export async function withdrawStudent(
       .update({ status: 'withdrawn' })
       .eq('id', enrollmentId)
 
-    if (enrollmentError) return { error: enrollmentError.message }
+    if (enrollmentError) return { error: mensajeDeError(enrollmentError, 'coordinator/students') }
 
     await createLeaderboardSnapshot(admin, studentId, enrollmentId)
   }

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { mensajeDeError } from '@/lib/errores'
 
 export type PromoteState = { error: string | null; promoted: boolean }
 
@@ -35,7 +36,7 @@ export async function promoteStudent(
     .update({ status: 'promoted' })
     .eq('id', enrollmentId)
 
-  if (error) return { error: error.message, promoted: false }
+  if (error) return { error: mensajeDeError(error, 'teacher/students'), promoted: false }
 
   if (studentId) revalidatePath(`/teacher/students/${studentId}`)
   revalidatePath('/teacher/classroom')

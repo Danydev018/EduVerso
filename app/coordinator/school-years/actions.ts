@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { CACHE_TAGS } from '@/lib/reference-data'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireRole } from '@/lib/auth'
+import { mensajeDeError } from '@/lib/errores'
 
 type ActionState = { error: string | null }
 
@@ -27,7 +28,7 @@ export async function createSchoolYear(
   const admin = createAdminClient()
   const { error } = await admin.from('school_years').insert({ name, start_date, end_date, is_current: false })
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'coordinator/school-years') }
 
   // La lista de años está cacheada globalmente (lib/reference-data.ts).
   revalidateTag(CACHE_TAGS.schoolYears)
@@ -50,14 +51,14 @@ export async function activateSchoolYear(
     .update({ is_current: false })
     .neq('id', id)
 
-  if (deactivateError) return { error: deactivateError.message }
+  if (deactivateError) return { error: mensajeDeError(deactivateError, 'coordinator/school-years') }
 
   const { error: activateError } = await admin
     .from('school_years')
     .update({ is_current: true })
     .eq('id', id)
 
-  if (activateError) return { error: activateError.message }
+  if (activateError) return { error: mensajeDeError(activateError, 'coordinator/school-years') }
 
   revalidateTag(CACHE_TAGS.schoolYears)
   revalidatePath('/coordinator/school-years')

@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { LESSON_BUCKET } from '@/lib/lesson-media'
 import type { LessonPage } from '@/app/student/lecciones/_components/lesson-reader'
+import { mensajeDeError } from '@/lib/errores'
 
 type ActionState = { error: string | null }
 
@@ -56,7 +57,7 @@ export async function guardarLeccion(
     if (error.message.includes('row-level security')) {
       return { error: 'Ese tema no es de un grado que dictes.' }
     }
-    return { error: error.message }
+    return { error: mensajeDeError(error, 'teacher/lecciones') }
   }
   if (count === 0) return { error: 'No se pudo guardar. Revisa tus permisos.' }
 
@@ -94,7 +95,7 @@ export async function borrarLeccion(
     .delete({ count: 'exact' })
     .eq('topic_id', topic_id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'teacher/lecciones') }
   if (count === 0) return { error: 'Ese tema no es de un grado que dictes.' }
 
   if (rutas.length > 0) await supabase.storage.from(LESSON_BUCKET).remove(rutas)

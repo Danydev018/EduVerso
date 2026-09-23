@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireRole } from '@/lib/auth'
+import { mensajeDeError } from '@/lib/errores'
 
 type ActionState = { error: string | null; deletedCount: number | null }
 
@@ -26,7 +27,7 @@ export async function cleanExpiredSnapshots(
     .lt('expires_at', today)
     .select('id')
 
-  if (error) return { error: error.message, deletedCount: null }
+  if (error) return { error: mensajeDeError(error, 'coordinator/dashboard'), deletedCount: null }
 
   revalidatePath('/coordinator/dashboard')
   return { error: null, deletedCount: (data ?? []).length }

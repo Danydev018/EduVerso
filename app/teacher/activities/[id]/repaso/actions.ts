@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { BRIEFING_BUCKET } from '@/lib/briefing'
+import { mensajeDeError } from '@/lib/errores'
 
 type ActionState = { error: string | null }
 
@@ -43,7 +44,7 @@ export async function addTextBlock(
     order_index: await siguienteOrden(supabase, activity_id),
   })
 
-  if (error) return { error: mensaje(error.message) }
+  if (error) return { error: mensajeDeError(error, 'teacher/activities/repaso') }
 
   revalidar(activity_id)
   return { error: null }
@@ -90,7 +91,7 @@ export async function addMediaBlock(
     order_index: await siguienteOrden(supabase, activity_id),
   })
 
-  if (error) return { error: mensaje(error.message) }
+  if (error) return { error: mensajeDeError(error, 'teacher/activities/repaso') }
 
   revalidar(activity_id)
   return { error: null }
@@ -118,7 +119,7 @@ export async function deleteBriefingBlock(
     .delete({ count: 'exact' })
     .eq('id', block_id)
 
-  if (error) return { error: mensaje(error.message) }
+  if (error) return { error: mensajeDeError(error, 'teacher/activities/repaso') }
   if (count === 0) return { error: 'Ese bloque no es de tu actividad.' }
 
   // Los archivos se borran DESPUÉS de la fila y sin cortar por el error: si
@@ -191,17 +192,6 @@ async function siguienteOrden(
   return (data?.order_index ?? -1) + 1
 }
 
-/** Traduce los errores de las restricciones a algo accionable. */
-function mensaje(raw: string): string {
-  if (raw.includes('imagen_con_descripcion')) {
-    return 'La imagen necesita una explicación: graba un audio o escribe una descripción.'
-  }
-  if (raw.includes('texto_con_contenido')) return 'El texto no puede estar vacío.'
-  if (raw.includes('audio_con_archivo')) return 'Falta el archivo de audio.'
-  if (raw.includes('row-level security')) return 'Esa actividad no es de tu salón.'
-  return raw
-}
-
 /**
  * Edita un bloque ya guardado.
  *
@@ -261,7 +251,7 @@ export async function updateBriefingBlock(
     .update({ text_content: texto, media_path: medio, audio_path: audio }, { count: 'exact' })
     .eq('id', block_id)
 
-  if (error) return { error: mensaje(error.message) }
+  if (error) return { error: mensajeDeError(error, 'teacher/activities/repaso') }
   if (count === 0) return { error: 'Ese bloque no es de tu actividad.' }
 
   // Recién ahora se borran los archivos reemplazados: si la fila no se

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { quitarMarcas, parseQuiz } from '@/lib/quiz'
+import { mensajeDeError } from '@/lib/errores'
 
 type ActionState = { error: string | null }
 
@@ -124,7 +125,7 @@ export async function createActivity(
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'teacher/activities') }
   if (creada) await guardarClaveYLimpiar(supabase, creada.id, ai_context)
 
   revalidatePath('/teacher/activities')
@@ -150,7 +151,7 @@ export async function toggleActivityStatus(
     .update({ status: next_status })
     .eq('id', activity_id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'teacher/activities') }
 
   revalidatePath('/teacher/activities')
   revalidatePath(`/teacher/activities/${activity_id}`)
@@ -228,7 +229,7 @@ export async function assignFromBank(
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'teacher/activities') }
   // La entrada del banco trae el quiz con sus marcas: van a la clave.
   if (creada) await guardarClaveYLimpiar(supabase, creada.id, entrada.content)
 
@@ -279,7 +280,7 @@ export async function unassignActivity(
     p_activity_id: activity_id,
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'teacher/activities') }
 
   const resultado = data as { ok: boolean; error?: string } | null
   if (!resultado?.ok) {
@@ -341,7 +342,7 @@ export async function updateActivity(
     )
     .eq('id', activity_id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'teacher/activities') }
   if (count === 0) return { error: 'Esa actividad no es de tu salón.' }
 
   // Solo después de confirmar que la actividad es suya: la política de

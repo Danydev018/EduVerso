@@ -56,3 +56,4 @@ graphify-out/
 test-results/
 playwright-report/
 tests/e2e/.auth/
+.env*

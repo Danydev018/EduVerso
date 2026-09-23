@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireRole } from '@/lib/auth'
+import { mensajeDeError } from '@/lib/errores'
 
 type ActionState = { error: string | null }
 
@@ -38,7 +39,7 @@ export async function createClassroom(
     if (error.code === '23505') {
       return { error: 'Ya existe un salón con ese grado y sección en el año activo.' }
     }
-    return { error: error.message }
+    return { error: mensajeDeError(error, 'coordinator/classrooms') }
   }
 
   revalidatePath('/coordinator/classrooms')
@@ -72,7 +73,7 @@ export async function assignStudentToClassroom(
     if (error.code === '23505') {
       return { error: 'El alumno ya está matriculado en un salón este año.' }
     }
-    return { error: error.message }
+    return { error: mensajeDeError(error, 'coordinator/classrooms') }
   }
 
   revalidatePath(`/coordinator/classrooms/${classroom_id}`)
@@ -91,7 +92,7 @@ export async function removeStudentFromClassroom(
   const admin = createAdminClient()
   const { error } = await admin.from('enrollments').delete().eq('id', enrollment_id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: mensajeDeError(error, 'coordinator/classrooms') }
 
   revalidatePath(`/coordinator/classrooms/${classroom_id}`)
   return { error: null }
