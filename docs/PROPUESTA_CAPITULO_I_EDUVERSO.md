@@ -653,6 +653,7 @@ Processes*. Cambridge: Harvard University Press.
 | <br><br>_______________________ | <br><br>_______________________ |
 | FIRMA EN RECONOCIMIENTO DE LA PROPUESTA | FIRMA EN RECONOCIMIENTO DE LA TUTORÍA |
 
+
 ---
 
 # ANEXO A. PANTALLAS DEL PROTOTIPO FUNCIONAL
@@ -668,37 +669,48 @@ Los datos visibles pertenecen a cuentas de prueba creadas expresamente para la
 verificación del sistema. Esta decisión no es accesoria: la Ley Orgánica para
 la Protección de Niños, Niñas y Adolescentes, invocada en las bases legales de
 esta propuesta, protege la imagen y la intimidad de los estudiantes, de modo
-que ningún nombre ni dato de un menor real aparece en este documento.
+que ningún nombre ni dato de un menor aparece en este documento.
 
 ## A.1. Acceso al sistema
 
 ![Pantalla de autenticación. Constituye el primer control de acceso: el rol del usuario se resuelve en el servidor y determina tanto la interfaz que recibe como las filas de la base de datos que las políticas de seguridad le permiten consultar.](capturas/01-login.png)
 
-## A.2. Módulo del docente
+## A.2. Módulo de coordinación
 
 Las pantallas de esta sección corresponden al objetivo específico 4, en lo
-relativo a los módulos de gestión académica y de elaboración de material
+relativo al módulo de gestión académica.
+
+![Panel de coordinación. Concentra los indicadores de la institución —matrícula activa, salones abiertos, docentes registrados y año escolar en curso— junto con la distribución de estudiantes por sección. Sustituye la consulta de registros dispersos por una lectura única del estado del plantel.](capturas/02-coordinacion-tablero.png)
+
+![Administración de salones. Cada sección muestra el grado, el docente responsable y su matrícula activa. Desde esta pantalla la coordinación abre secciones y asigna docentes, operaciones reservadas a este rol por las políticas de seguridad de la base de datos.](capturas/04-coordinacion-salones.png)
+
+![Administración de docentes, con el salón asignado a cada uno y su estado de actividad. La desactivación de una cuenta es potestad exclusiva de coordinación: un disparador en la base de datos impide que un docente o un estudiante altere su propio rol o el de otro, incluso si la petición no proviene de la interfaz del sistema.](capturas/05-coordinacion-docentes.png)
+
+## A.3. Módulo del docente
+
+Las pantallas de esta sección corresponden al objetivo específico 4, en lo
+relativo a los módulos de gestión del salón y de elaboración de material
 ilustrado.
 
-![Tablero del docente. Reúne la matrícula del salón, los estudiantes sin actividad reciente, la clasificación por puntos de experiencia y el porcentaje de avance de cada actividad asignada. Sustituye la consulta manual de registros dispersos por un único punto de lectura.](capturas/02-docente-tablero.png)
+![Tablero del docente. Reúne la matrícula del salón, los estudiantes sin actividad reciente, la clasificación por puntos de experiencia y el porcentaje de avance de cada actividad asignada.](capturas/06-docente-tablero.png)
 
-![Registro del salón. Cada estudiante presenta su nivel alcanzado, su total de puntos de experiencia, la fecha de su última actividad y su estado de participación. Es el instrumento que permite al docente identificar el rezago antes de la evaluación sumativa.](capturas/03-docente-salon.png)
+![Registro del salón. Cada estudiante presenta su nivel alcanzado, su total de puntos de experiencia, la fecha de su última actividad y su estado de participación. Es el instrumento que permite al docente identificar el rezago antes de la evaluación sumativa.](capturas/07-docente-salon.png)
 
-![Listado de actividades del salón, con su estado de publicación y el avance del grupo en cada una.](capturas/04-docente-actividades.png)
+![Listado de actividades del salón, con su estado de publicación y el avance del grupo en cada una.](capturas/08-docente-actividades.png)
 
-![Catálogo de lecciones por área de conocimiento. El sistema informa cuántos temas del grado cuentan ya con material de refuerzo elaborado, de modo que el docente identifica de inmediato los vacíos por cubrir.](capturas/05-docente-lecciones.png)
+![Catálogo de lecciones por área de conocimiento. El sistema informa cuántos temas del grado cuentan ya con material de refuerzo elaborado, de modo que el docente identifica de inmediato los vacíos por cubrir.](capturas/09-docente-lecciones.png)
 
-![Editor de lección. El material se organiza en páginas de una sola idea, conforme al principio de segmentación de la teoría de la carga cognitiva expuesto en las bases teóricas. Cada página admite título, texto e ilustración.](capturas/06-docente-editor-leccion.png)
+![Editor de lección. El material se organiza en páginas de una sola idea, conforme al principio de segmentación de la teoría de la carga cognitiva expuesto en las bases teóricas. Cada página admite título, texto e ilustración.](capturas/10-docente-editor-leccion.png)
 
-![Editor gráfico de escenas, componente central del módulo de elaboración de material de refuerzo. Integra un catálogo de ciento treinta y una piezas ilustradas agrupadas en catorce categorías, herramientas de trazo libre, texto y flechas, fondos predefinidos y un asistente de inteligencia artificial que dispone los elementos a partir de una instrucción en lenguaje natural. La salida del asistente se limita a componentes del catálogo y es validada por el sistema antes de aplicarse; la autoría del material permanece en el docente.](capturas/07-docente-lienzo.png)
+![Editor gráfico de escenas, componente central del módulo de elaboración de material de refuerzo. Integra un catálogo de ciento treinta y una piezas ilustradas agrupadas en catorce categorías, herramientas de trazo libre, texto y flechas, fondos predefinidos y un asistente de inteligencia artificial que dispone los elementos a partir de una instrucción en lenguaje natural. La salida del asistente se limita a componentes del catálogo y es validada por el sistema antes de aplicarse; la autoría del material permanece en el docente.](capturas/11-docente-lienzo.png)
 
-## A.3. Módulo del estudiante
+## A.4. Módulo del estudiante
 
 Las pantallas de esta sección corresponden al objetivo específico 4, en lo
 relativo al módulo de aprendizaje gamificado.
 
-![Tablero del estudiante. El avance académico se representa como la reparación progresiva de una nave: cada componente se desbloquea al completar actividades. La barra superior muestra el nivel alcanzado y la energía estelar acumulada, denominación que reciben los puntos de experiencia en la interfaz dirigida al niño.](capturas/08-alumno-tablero.png)
+![Tablero del estudiante. El avance académico se representa como la reparación progresiva de una nave: cada componente se desbloquea al completar actividades. La barra superior muestra el nivel alcanzado y la energía estelar acumulada, denominación que reciben los puntos de experiencia en la interfaz dirigida al niño.](capturas/12-alumno-tablero.png)
 
-![Listado de misiones asignadas al estudiante, con su estado de avance.](capturas/09-alumno-misiones.png)
+![Listado de misiones asignadas al estudiante, con su estado de avance.](capturas/13-alumno-misiones.png)
 
-![Etapa de una actividad en curso. El encabezado indica la posición dentro de la secuencia y los puntos de experiencia que otorga la etapa. En el extremo inferior derecho se encuentra el agente tutor, cuyo distintivo numérico señala las consultas que le restan al estudiante: el tope es verificado en el servidor y su finalidad es sostener el andamiaje sin sustituir el esfuerzo del niño.](capturas/10-alumno-actividad.png)
+![Etapa de una actividad en curso. El encabezado indica la posición dentro de la secuencia y los puntos de experiencia que otorga la etapa. En el extremo inferior derecho se encuentra el agente tutor, cuyo distintivo numérico señala las consultas que le restan al estudiante: el tope es verificado en el servidor y su finalidad es sostener el andamiaje sin sustituir el esfuerzo del niño.](capturas/14-alumno-actividad.png)
